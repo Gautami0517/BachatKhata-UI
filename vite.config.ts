@@ -19,13 +19,14 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
-        name: 'BenefitAI',
-        short_name: 'BenefitAI',
+        name: 'C-Vault',
+        short_name: 'C-Vault',
         description: 'AI Financial Memory Agent',
         theme_color: '#7C3AED',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait-primary',
+        // Installed app opens the existing Dashboard — not the Download page.
         start_url: '/',
         scope: '/',
         id: '/',

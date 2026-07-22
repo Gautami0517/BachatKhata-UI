@@ -1,0 +1,11 @@
+# Trusted HTTPS for Android PWA install (Let's Encrypt).
+# Open AWS SG inbound TCP 80 + 443.
+52.66.237.235.sslip.io {
+	encode gzip
+	reverse_proxy ui:80
+}
+
+# Old share links hit the bare IP — send them to the installable HTTPS host.
+http://52.66.237.235 {
+	redir https://52.66.237.235.sslip.io{uri} permanent
+}

@@ -4,9 +4,10 @@
 #   cp .env.docker.example .env.docker   # set GEMINI_API_KEY
 #   docker compose --env-file .env.docker up --build
 #
-# UI  → http://localhost:8080
-# API → http://localhost:3000
-# Docs→ http://localhost:3000/api/docs
+# UI (HTTP)              → http://localhost:8080
+# UI (trusted HTTPS)     → https://52.66.237.235.sslip.io  (needs SG ports 80+443)
+# API                    → http://localhost:3000
+# Docs                   → http://localhost:3000/api/docs
 
 services:
   db:
@@ -18,8 +19,10 @@ services:
       POSTGRES_DB: bachatkhata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Keep Postgres on the compose network only — do not publish 5432 on cloud hosts.
+    # For local DB tools: temporarily add `ports: ["5432:5432"]`.
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d bachatkhata"]
       interval: 5s
@@ -51,13 +54,29 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # Browser calls the host-mapped API port
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+        # Empty = same-origin (nginx proxies API). Required when UI is behind HTTPS.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     restart: unless-stopped
     ports:
       - "8080:80"
     depends_on:
       - api
 
+  # Trusted HTTPS via Let's Encrypt — required for Android Chrome PWA install.
+  caddy:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - ui
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

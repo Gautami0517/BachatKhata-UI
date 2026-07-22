@@ -9,11 +9,28 @@
     <meta name="description" content="AI Financial Memory Agent" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="BenefitAI" />
-    <title>BenefitAI</title>
+    <meta name="apple-mobile-web-app-title" content="C-Vault" />
+    <title>C-Vault</title>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Public IP/HTTP cannot install as a PWA — bounce to trusted HTTPS immediately. -->
+    <script>
+      (function () {
+        var host = location.hostname
+        var needsCanonical =
+          host === '52.66.237.235' ||
+          (host === '52.66.237.235.sslip.io' && location.protocol === 'http:')
+        if (needsCanonical) {
+          location.replace(
+            'https://52.66.237.235.sslip.io' +
+              location.pathname +
+              location.search +
+              location.hash,
+          )
+        }
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

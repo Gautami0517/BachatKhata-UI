@@ -1,10 +1,14 @@
 /**
- * App shell: React Query + two routes (/ Dashboard, /share Share Import).
+ * App shell: React Query + routes.
+ * /download — shareable install landing (C-Vault Download button)
+ * /         — Dashboard (also PWA start_url after install)
+ * /share    — Share Target import
  */
 import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Dashboard } from './pages/Dashboard'
+import { Download } from './pages/Download'
 import { ShareImport } from './pages/ShareImport'
 import { logInfo } from './utils/logger'
 
@@ -37,6 +41,7 @@ export default function App() {
         <NavigationLogger />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/download" element={<Download />} />
           <Route path="/share" element={<ShareImport />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

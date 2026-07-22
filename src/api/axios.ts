@@ -2,14 +2,14 @@ import axios from 'axios'
 
 /**
  * Single Axios instance for the entire app.
- * Base URL comes only from VITE_API_BASE_URL so switching to a deployed
- * backend never requires code changes — only an env update.
+ * Base URL comes from VITE_API_BASE_URL. Leave it empty to call the same
+ * origin (nginx proxies /benefits etc. to the API) — required for HTTPS PWA.
  */
-const baseURL = import.meta.env.VITE_API_BASE_URL
+const baseURL = import.meta.env.VITE_API_BASE_URL ?? ''
 
-if (!baseURL) {
+if (!baseURL && import.meta.env.DEV) {
   console.warn(
-    '[BenefitAI] VITE_API_BASE_URL is not set. API calls will fail until .env is configured.',
+    '[BenefitAI] VITE_API_BASE_URL is not set. In dev, set it to your API (e.g. http://localhost:3000).',
   )
 }
 
