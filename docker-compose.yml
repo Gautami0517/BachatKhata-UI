@@ -1,0 +1,63 @@
+# Local full stack: UI (this repo) + API (../BachatKhata) + Postgres
+# Expects sibling checkout: C-Vault/BachatKhata and C-Vault/BachatKhata-UI
+#
+#   cp .env.docker.example .env.docker   # set GEMINI_API_KEY
+#   docker compose --env-file .env.docker up --build
+#
+# UI  → http://localhost:8080
+# API → http://localhost:3000
+# Docs→ http://localhost:3000/api/docs
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bachatkhata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bachatkhata"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ../BachatKhata
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # Overrides any host DATABASE_URL so the API always reaches the compose db service
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/bachatkhata?schema=public
+      SWAGGER_PATH: api/docs
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Browser calls the host-mapped API port
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

@@ -1,0 +1,13 @@
+node_modules
+dist
+dev-dist
+.dev-dist
+.git
+.gitignore
+.vercel
+.env
+.env.local
+.env.docker
+*.md
+.oxlintrc.json
+.DS_Store
