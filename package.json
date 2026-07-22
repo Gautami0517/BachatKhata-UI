@@ -1,9 +1,9 @@
 {
-  "name": "bachatkhata-pwa-share-poc",
+  "name": "benefitaI-ui",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "PoC: Can Google Pay share text into an installed BachatKhata PWA?",
+  "description": "BenefitAI — Share Target import → Financial Memory dashboard",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,18 +11,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.4",
+    "axios": "^1.18.1",
+    "framer-motion": "^12.42.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",
     "vite-plugin-pwa": "^1.3.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

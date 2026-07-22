@@ -1,133 +1,58 @@
-# BachatKhata — PWA Share Target Proof of Concept
+# BenefitAI — Share → Import → Dashboard
 
-Minimal React + Vite + TypeScript Progressive Web App used to answer **one** question:
+Production-ready vertical slice for the hackathon demo:
 
-> Can Google Pay share coupon text directly into our installed PWA?
-
-This project does **not** include a real dashboard, coupon parsing, auth, backend, or APIs.
-Success means: Google Pay → Share → **BachatKhata** appears in the Android Share Sheet → shared text is shown on `/share`.
+**Google Pay → Share → BenefitAI → Import experience → POST /benefits/import → Success → Dashboard**
 
 ## Stack
 
-- React + TypeScript
-- Vite
-- `vite-plugin-pwa` (custom service worker via `injectManifest`)
-- React Router (two routes only: `/` and `/share`)
+- React + TypeScript + Vite
+- Tailwind CSS
+- React Router
+- TanStack React Query
+- Axios
+- Framer Motion
+- vite-plugin-pwa (Web Share Target)
 
-## Routes
-
-| Path     | Purpose                                      |
-|----------|----------------------------------------------|
-| `/`      | Home — install CTA + install status          |
-| `/share` | Share Target receiver — displays payload     |
-
-## How to run locally
+## Setup
 
 ```bash
+cp .env.example .env
+# VITE_API_BASE_URL=http://localhost:3000
 npm install
+```
+
+Start the Nest backend (BachatKhata) on port 3000 with CORS enabled, then:
+
+```bash
 npm run dev
 ```
 
-Open the printed local URL (usually `http://localhost:5173`).
+## Scripts
 
-Notes:
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Local Vite server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
 
-- Service worker registration is enabled in dev (`devOptions.enabled`).
-- Android Share Sheet verification **will not** work reliably against `localhost`. Use a public HTTPS deploy (Vercel) for the real test.
-- You can still manually open `/share?text=hello&url=https://example.com` to preview the UI.
+## Routes
 
-## How to build
+| Path | Screen |
+|------|--------|
+| `/` | Dashboard — `GET /benefits?sort=expiring_soon` |
+| `/share` | Share Import — auto `POST /benefits/import` |
 
-```bash
-npm run build
-```
-
-Production assets are written to `dist/`.
-
-Preview the production build locally:
-
-```bash
-npm run preview
-```
-
-## How to deploy on Vercel
-
-### Option A — Vercel CLI
-
-```bash
-npm i -g vercel
-vercel
-```
-
-Follow the prompts. Framework preset: **Vite**. Build command: `npm run build`. Output: `dist`.
-
-### Option B — GitHub integration
-
-1. Push this repo to GitHub.
-2. Import the repo in the [Vercel dashboard](https://vercel.com/new).
-3. Keep defaults (Vite). Deploy.
-4. Open the HTTPS URL Vercel assigns (required for installable PWAs).
-
-`vercel.json` is included so SPA deep links (including `/share`) rewrite to `index.html`. The installed service worker still intercepts Share Target **POST** `/share` before the network.
-
-## How to install the PWA on Android
-
-1. Open the **HTTPS** deployment in **Chrome** on Android.
-2. Wait until the app is installable (manifest + service worker + icons OK).
-3. Either:
-   - Tap **Install BachatKhata** on the home page, or
-   - Chrome menu → **Install app** / **Add to Home screen**.
-4. Launch BachatKhata from the home screen (standalone window).
-5. Confirm Installation Status shows installed / standalone.
-
-## How to verify BachatKhata appears in the Android Share Sheet
-
-1. Install BachatKhata as above (Share Target only applies to **installed** PWAs).
-2. Open **Google Pay**.
-3. Open a coupon / offer / text you can share.
-4. Tap **Share**.
-5. In the Android Share Sheet, look for **BachatKhata**.
-6. Share into BachatKhata.
-7. The app should open `/share` and show:
-   - Received Text
-   - Received URL
-   - Received Files Count
-   - Raw Payload (readonly textarea)
-8. If nothing arrived, the page shows: `No shared content received.`
-
-### Debugging tips
-
-- Chrome on desktop: `chrome://inspect` → inspect the Android tab / WebView and watch console logs prefixed with `[BachatKhata PoC]` and `[SW]`.
-- Expected logs include: Install Prompt Available, App Installed, Share Payload, Navigation Events.
-- Confirm the live manifest contains `share_target` (open `/manifest.webmanifest` on the deployed site).
-- After redeploys, close all BachatKhata tasks and reopen from the home screen so the updated service worker activates.
-
-## Project layout
+## Local share simulation
 
 ```
-src/
-  components/     InstallButton, SharePayloadDisplay
-  hooks/          useInstallPrompt, useSharePayload
-  pages/          HomePage, SharePage
-  types/          share payload types
-  utils/          console logger
-  sw.ts           Share Target POST interceptor + precache
-public/icons/     Placeholder PWA icons (192 / 512, maskable)
+http://localhost:5173/share?text=Flat%2038%25%20OFF%20on%20Smart%20Gas%20Leak%20Detector%0AVoucher%20code%3A%20RIPPLESAFEG1
 ```
 
-## Manifest highlights
+## Environment
 
-- Name / Short name: `BachatKhata`
-- Description: `AI Financial Memory Agent`
-- Display: `standalone`
-- Theme color: `#4F46E5`
-- Background: `#ffffff`
-- `share_target.action`: `/share` (POST `multipart/form-data`)
+Only `VITE_API_BASE_URL` must change when the backend is deployed. No other code changes.
 
-## Out of scope (intentionally)
+## Out of scope
 
-- Real BachatKhata dashboard
-- Coupon parsing / NLP
-- Backend or database
-- Authentication
-- Redux / API calls
+Search, AI Search, Recommendations, Auth, Notifications, Settings, Profile, Public Coupons.

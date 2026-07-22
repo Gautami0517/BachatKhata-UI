@@ -12,7 +12,7 @@ import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 declare let self: ServiceWorkerGlobalScope
 
-const SHARE_CACHE = 'bachatkhata-share-payload'
+const SHARE_CACHE = 'benefitaI-share-payload'
 const SHARE_PAYLOAD_KEY = '/__last_share_payload__'
 
 precacheAndRoute(self.__WB_MANIFEST)

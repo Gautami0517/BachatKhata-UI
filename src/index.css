@@ -1,211 +1,45 @@
+@import 'tailwindcss';
+
+/* BenefitAI design tokens — purple accent, Material 3–inspired calm UI */
 :root {
   color-scheme: light;
-  --brand: #4f46e5;
-  --brand-dark: #3730a3;
-  --bg: #f4f5fb;
-  --surface: #ffffff;
-  --text: #111827;
+  --brand: #7c3aed;
+  --brand-soft: #f3e8ff;
+  --brand-dark: #5b21b6;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --ink: #111827;
   --muted: #6b7280;
-  --border: #e5e7eb;
-  --danger: #b91c1c;
-  --radius: 14px;
-  --shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
-  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(79, 70, 229, 0.16), transparent 40%),
-    radial-gradient(circle at top right, rgba(79, 70, 229, 0.08), transparent 35%),
-    var(--bg);
-}
-
-* {
-  box-sizing: border-box;
+  --line: #e5e7eb;
+  --surface: #ffffff;
+  --canvas: #fafafa;
 }
 
 html,
 body,
 #root {
   min-height: 100%;
-  margin: 0;
 }
 
 body {
-  min-width: 320px;
-}
-
-.app-shell {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
-}
-
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.hero h1 {
-  margin: 0.2rem 0;
-  font-size: clamp(2.4rem, 8vw, 3.4rem);
-  letter-spacing: -0.03em;
-  color: var(--brand);
-}
-
-.hero.compact h1 {
-  font-size: clamp(1.8rem, 6vw, 2.4rem);
-}
-
-.eyebrow {
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--muted);
+  font-family:
+    'Segoe UI',
+    'Helvetica Neue',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-.tagline {
-  margin: 0;
-  color: var(--muted);
+* {
+  box-sizing: border-box;
 }
 
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.25rem;
-}
-
-.panel h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.1rem;
-}
-
-.status-line {
-  margin: 0 0 1rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: 10px;
-  background: #eef2ff;
-  color: var(--brand-dark);
-  font-weight: 600;
-}
-
-.status-line[data-installed='true'] {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.cta-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.btn {
-  appearance: none;
-  border: none;
-  border-radius: 12px;
-  padding: 0.85rem 1.1rem;
+button,
+input {
   font: inherit;
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-large {
-  min-height: 3.4rem;
-  font-size: 1.05rem;
-}
-
-.btn-primary {
-  background: var(--brand);
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: var(--brand-dark);
-}
-
-.btn-secondary {
-  background: #fff;
-  color: var(--brand);
-  border: 2px solid var(--brand);
-}
-
-.btn-secondary:hover {
-  background: #eef2ff;
-}
-
-.hints ol {
-  margin: 0;
-  padding-left: 1.2rem;
-  color: var(--muted);
-}
-
-.hints li + li {
-  margin-top: 0.45rem;
-}
-
-.muted,
-.empty-state {
-  margin: 0;
-  color: var(--muted);
-}
-
-.empty-state {
-  padding: 1rem;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  background: #fafafa;
-  text-align: center;
-  font-weight: 600;
-}
-
-.share-summary {
-  display: grid;
-  gap: 0.85rem;
-  margin: 0 0 1rem;
-}
-
-.share-summary dt {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.share-summary dd {
-  margin: 0.2rem 0 0;
-  word-break: break-word;
-  white-space: pre-wrap;
-  font-weight: 600;
-}
-
-.textarea-label {
-  display: block;
-  margin-bottom: 0.4rem;
-  font-weight: 700;
-}
-
-.raw-payload {
-  width: 100%;
-  resize: vertical;
-  min-height: 280px;
-  padding: 0.9rem;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #0b1020;
-  color: #e5e7eb;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.85rem;
-  line-height: 1.45;
 }

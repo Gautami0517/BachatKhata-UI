@@ -1,6 +1,5 @@
 /**
- * Shared content shape used by the Share Target PoC.
- * Mirrors what Android may send via Web Share Target params.
+ * Shared content shape used when Android opens /share via Web Share Target.
  */
 export type SharedFileMeta = {
   name: string
@@ -15,9 +14,7 @@ export type SharePayload = {
   filesCount: number
   files: SharedFileMeta[]
   receivedAt: string | null
-  /** How the payload was obtained (POST cache, query string, or empty). */
   source: 'share_target_post' | 'query_params' | 'none'
-  /** Full reconstructed object for the readonly "Raw Payload" textarea. */
   raw: Record<string, unknown>
 }
 
@@ -32,6 +29,5 @@ export const EMPTY_SHARE_PAYLOAD: SharePayload = {
   raw: {},
 }
 
-/** Cache key written by the service worker after a Share Target POST. */
-export const SHARE_CACHE_NAME = 'bachatkhata-share-payload'
+export const SHARE_CACHE_NAME = 'benefitaI-share-payload'
 export const SHARE_PAYLOAD_CACHE_URL = '/__last_share_payload__'

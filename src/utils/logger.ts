@@ -1,8 +1,4 @@
-/**
- * Central debug logger for the PWA PoC.
- * Prefixes every message so Chrome remote debugging / Logcat filters are easy.
- */
-const PREFIX = '[BachatKhata PoC]'
+const PREFIX = '[BenefitAI]'
 
 export function logInfo(event: string, detail?: unknown): void {
   if (detail === undefined) {

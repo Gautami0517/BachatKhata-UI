@@ -1,22 +1,29 @@
 /**
- * App shell: two routes only (/ and /share) plus navigation logging.
+ * App shell: React Query + two routes (/ Dashboard, /share Share Import).
  */
 import { useEffect } from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { HomePage } from './pages/HomePage'
-import { SharePage } from './pages/SharePage'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Dashboard } from './pages/Dashboard'
+import { ShareImport } from './pages/ShareImport'
 import { logInfo } from './utils/logger'
 
-/** Logs every client-side navigation for remote debugging on Android. */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: true,
+    },
+  },
+})
+
 function NavigationLogger() {
   const location = useLocation()
 
   useEffect(() => {
-    logInfo('Navigation Events', {
+    logInfo('Navigation', {
       pathname: location.pathname,
       search: location.search,
-      hash: location.hash,
-      fullUrl: window.location.href,
     })
   }, [location])
 
@@ -24,24 +31,16 @@ function NavigationLogger() {
 }
 
 export default function App() {
-  useEffect(() => {
-    logInfo('App mounted', {
-      href: window.location.href,
-      displayMode: window.matchMedia('(display-mode: standalone)').matches
-        ? 'standalone'
-        : 'browser',
-    })
-  }, [])
-
   return (
-    <BrowserRouter>
-      <NavigationLogger />
-      <div className="app-shell">
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <NavigationLogger />
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/share" element={<SharePage />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/share" element={<ShareImport />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }

@@ -1,10 +1,6 @@
 /**
- * Loads shared content for the /share route.
- *
- * Order of precedence:
- * 1. Cache written by the service worker after a Share Target POST
- * 2. URL query params (redirect from SW, or manual GET testing)
- * 3. Empty payload
+ * Loads shared content for the /share route (Web Share Target).
+ * Prefers the service-worker cache, then falls back to query params.
  */
 import { useEffect, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
@@ -37,7 +33,7 @@ function buildPayload(partial: {
   const text = partial.text ?? ''
   const url = partial.url ?? ''
 
-  const payload: SharePayload = {
+  return {
     title,
     text,
     url,
@@ -56,22 +52,15 @@ function buildPayload(partial: {
       ...partial.extraRaw,
     },
   }
-
-  return payload
 }
 
 async function readPayloadFromShareCache(): Promise<SharePayload | null> {
-  if (!('caches' in window)) {
-    return null
-  }
+  if (!('caches' in window)) return null
 
   try {
     const cache = await caches.open(SHARE_CACHE_NAME)
     const response = await cache.match(SHARE_PAYLOAD_CACHE_URL)
-    if (!response) {
-      logInfo('Share cache miss — no POST payload stored yet')
-      return null
-    }
+    if (!response) return null
 
     const data = (await response.json()) as {
       title?: string
@@ -79,10 +68,7 @@ async function readPayloadFromShareCache(): Promise<SharePayload | null> {
       url?: string
       files?: SharedFileMeta[]
       receivedAt?: string
-      source?: string
     }
-
-    logInfo('Share cache hit', data)
 
     return buildPayload({
       title: data.title,
@@ -99,6 +85,17 @@ async function readPayloadFromShareCache(): Promise<SharePayload | null> {
   }
 }
 
+/** Clears the one-shot share cache so a refresh does not re-import. */
+export async function clearSharePayloadCache(): Promise<void> {
+  if (!('caches' in window)) return
+  try {
+    const cache = await caches.open(SHARE_CACHE_NAME)
+    await cache.delete(SHARE_PAYLOAD_CACHE_URL)
+  } catch (error) {
+    logError('Failed clearing share cache', error)
+  }
+}
+
 function readPayloadFromQuery(searchParams: URLSearchParams): SharePayload {
   const title = searchParams.get('title') ?? ''
   const text = searchParams.get('text') ?? ''
@@ -107,8 +104,6 @@ function readPayloadFromQuery(searchParams: URLSearchParams): SharePayload {
   const filesCount = filesParam ? Number.parseInt(filesParam, 10) || 0 : 0
   const sharedFlag = searchParams.get('shared')
 
-  const queryObject = Object.fromEntries(searchParams.entries())
-
   return buildPayload({
     title,
     text,
@@ -116,7 +111,7 @@ function readPayloadFromQuery(searchParams: URLSearchParams): SharePayload {
     filesCount,
     receivedAt: sharedFlag ? new Date().toISOString() : null,
     source: title || text || url || filesCount || sharedFlag ? 'query_params' : 'none',
-    extraRaw: { query: queryObject },
+    extraRaw: { query: Object.fromEntries(searchParams.entries()) },
   })
 }
 
@@ -135,19 +130,11 @@ export function useSharePayload(): UseSharePayloadResult {
   useEffect(() => {
     let cancelled = false
 
-    logInfo('Navigation Events — /share effect', {
-      pathname: location.pathname,
-      search: location.search,
-      href: window.location.href,
-    })
-
     const load = async () => {
       setLoading(true)
-
       const fromCache = await readPayloadFromShareCache()
       const fromQuery = readPayloadFromQuery(searchParams)
 
-      // Prefer cache (full POST body) when present; fall back to query string.
       let next = EMPTY_SHARE_PAYLOAD
       if (fromCache && hasMeaningfulContent(fromCache)) {
         next = fromCache
@@ -156,7 +143,6 @@ export function useSharePayload(): UseSharePayloadResult {
       }
 
       logInfo('Share Payload resolved', next)
-
       if (!cancelled) {
         setPayload(next)
         setLoading(false)
@@ -164,7 +150,6 @@ export function useSharePayload(): UseSharePayloadResult {
     }
 
     void load()
-
     return () => {
       cancelled = true
     }
