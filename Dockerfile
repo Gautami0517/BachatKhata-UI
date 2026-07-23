@@ -10,6 +10,10 @@ COPY . .
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
+# Baked into the client bundle — required for PushManager.subscribe
+ARG VITE_VAPID_PUBLIC_KEY=
+ENV VITE_VAPID_PUBLIC_KEY=$VITE_VAPID_PUBLIC_KEY
+
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runner
