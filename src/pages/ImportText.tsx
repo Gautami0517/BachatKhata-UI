@@ -71,7 +71,7 @@ export function ImportText() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] max-w-lg flex-col bg-[#f7f7f8] px-5 py-6">
+    <main className="mx-auto flex min-h-full flex-col bg-[#fcf8fe] px-5 py-6">
       <button type="button" onClick={() => navigate(-1)} className="mb-4 w-fit text-xl" aria-label="Back">
         ←
       </button>

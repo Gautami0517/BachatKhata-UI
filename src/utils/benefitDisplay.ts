@@ -183,3 +183,76 @@ export function getBrandInitials(label: string): string {
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
   return `${words[0][0] ?? ''}${words[1][0] ?? ''}`.toUpperCase()
 }
+
+const KNOWN_MERCHANT_SITES: Record<string, string> = {
+  myntra: 'https://www.myntra.com',
+  zomato: 'https://www.zomato.com',
+  swiggy: 'https://www.swiggy.com',
+  amazon: 'https://www.amazon.in',
+  flipkart: 'https://www.flipkart.com',
+  ajio: 'https://www.ajio.com',
+  nykaa: 'https://www.nykaa.com',
+  meesho: 'https://www.meesho.com',
+  bigbasket: 'https://www.bigbasket.com',
+  blinkit: 'https://blinkit.com',
+  'google pay': 'https://pay.google.com',
+  gpay: 'https://pay.google.com',
+}
+
+/**
+ * Resolve a usable merchant/offer URL for "copy code + open site".
+ * Prefers an explicit URL in raw text, then domain-like fields, then known merchants.
+ */
+export function resolveOfferUrl(benefit: {
+  rawText?: string | null
+  merchant?: string | null
+  brand?: string | null
+  source?: string | null
+  title?: string | null
+}): string | null {
+  const blobs = [benefit.rawText, benefit.source, benefit.merchant, benefit.brand, benefit.title]
+    .filter(Boolean)
+    .join('\n')
+
+  const httpsMatch = blobs.match(/https?:\/\/[^\s<>"']+/i)
+  if (httpsMatch) {
+    return sanitizeUrl(httpsMatch[0])
+  }
+
+  const wwwMatch = blobs.match(/\bwww\.[a-z0-9][-a-z0-9.]*\.[a-z]{2,}(?:\/[^\s<>"']*)?/i)
+  if (wwwMatch) {
+    return sanitizeUrl(`https://${wwwMatch[0]}`)
+  }
+
+  const domainMatch = blobs.match(
+    /\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|in|co\.in|net|org|io|app)(?:\/[^\s<>"']*)?/i,
+  )
+  if (domainMatch) {
+    const candidate = domainMatch[0]
+    // Ignore email-like leftovers
+    if (!candidate.includes('@')) {
+      return sanitizeUrl(`https://${candidate}`)
+    }
+  }
+
+  for (const value of [benefit.merchant, benefit.brand, benefit.source, benefit.title]) {
+    const key = value?.trim().toLowerCase()
+    if (!key) continue
+    for (const [name, url] of Object.entries(KNOWN_MERCHANT_SITES)) {
+      if (key === name || key.includes(name)) return url
+    }
+  }
+
+  return null
+}
+
+function sanitizeUrl(raw: string): string | null {
+  const cleaned = raw.replace(/[),.;!?]+$/g, '')
+  try {
+    const url = new URL(cleaned)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+    return url.toString()
+  } catch {
+    return null
+  }
+}

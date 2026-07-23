@@ -10,6 +10,7 @@ import { FilterSlidersIcon, LightningIcon, LightningOutlineIcon } from '../compo
 import { ImportSheet } from '../components/ImportSheet'
 import { LoadingCardList } from '../components/LoadingCard'
 import { getErrorMessage, useToast } from '../components/ToastProvider'
+import { useAuth, userInitials } from '../auth/AuthContext'
 import { useAskBenefits } from '../hooks/useBenefitMutations'
 import { useBenefits } from '../hooks/useBenefits'
 import { FIXED_CATEGORIES, type BenefitSort } from '../types/benefit'
@@ -33,6 +34,7 @@ const GROUP_HEADER: Record<string, string> = {
 export function Dashboard() {
   const navigate = useNavigate()
   const { pushToast } = useToast()
+  const { user } = useAuth()
   const [sort, setSort] = useState<BenefitSort>('expiring_soon')
   const [category, setCategory] = useState<string | null>(null)
   const [categoryOpen, setCategoryOpen] = useState(false)
@@ -43,6 +45,8 @@ export function Dashboard() {
 
   const benefits = data ?? []
   const groups = useMemo(() => groupBenefitsByExpiry(benefits), [benefits])
+  const firstName = user?.name?.trim().split(/\s+/)[0] || 'there'
+  const initials = userInitials(user?.name)
 
   const onAsk = async (query: string) => {
     try {
@@ -54,21 +58,21 @@ export function Dashboard() {
   }
 
   return (
-    <main className="mx-auto min-h-[100dvh] max-w-lg bg-[#f9f9fb] px-4 pb-40 pt-5">
+    <main className="mx-auto min-h-full bg-[#fcf8fe] px-4 pb-40 pt-5">
       <header className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <LightningOutlineIcon className="h-[22px] w-[22px] text-gray-900" strokeWidth={1.8} />
           <h1 className="text-[22px] font-bold tracking-tight text-[#3b3a8c]">C-Vault</h1>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-800">Hi! Prajwal</span>
+          <span className="text-sm font-medium text-gray-800">Hi! {firstName}</span>
           <button
             type="button"
             onClick={() => navigate('/profile')}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e4f6] text-xs font-bold text-[#3b3a8c]"
             aria-label="Open profile"
           >
-            PR
+            {initials}
           </button>
         </div>
       </header>

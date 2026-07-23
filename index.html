@@ -2,10 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=cvault-2" />
+    <link rel="shortcut icon" href="/favicon.svg?v=cvault-2" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png?v=cvault-2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#3b3a8c" />
+    <meta name="application-name" content="C-Vault" />
     <meta name="description" content="C-Vault — your financial memory vault" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,6 +19,7 @@
     <!-- Public IP/HTTP cannot install as a PWA — bounce to trusted HTTPS immediately. -->
     <script>
       (function () {
+        document.title = 'C-Vault'
         var host = location.hostname
         var needsCanonical =
           host === '52.66.237.235' ||

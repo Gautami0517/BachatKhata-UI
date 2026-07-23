@@ -1,6 +1,5 @@
 /**
- * Optional page chrome for future screens.
- * Dashboard / ShareImport are currently full-bleed mobile pages.
+ * Rounded mobile screen shell — soft corners like a native app viewport.
  */
 import type { ReactNode } from 'react'
 
@@ -9,5 +8,5 @@ type AppLayoutProps = {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  return <div className="min-h-screen bg-[#fafafa] text-gray-900">{children}</div>
+  return <div className="app-screen text-gray-900">{children}</div>
 }

@@ -27,7 +27,7 @@ export function ImportProgress({
   onBack,
 }: ImportProgressProps) {
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-lg flex-col bg-[#f7f7f8] px-5 pb-8 pt-4">
+    <div className="mx-auto flex min-h-full flex-col bg-[#fcf8fe] px-5 pb-8 pt-4">
       {onBack && (
         <button type="button" onClick={onBack} className="mb-2 w-fit text-xl text-gray-800" aria-label="Back">
           ←

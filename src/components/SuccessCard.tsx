@@ -23,7 +23,7 @@ export function SuccessCard({ benefit, onViewDashboard }: SuccessCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex min-h-[100dvh] flex-col items-center justify-center bg-white px-5 py-10"
+      className="flex min-h-full flex-col items-center justify-center bg-[#fcf8fe] px-5 py-10"
     >
       <div className="relative">
         <div className="absolute -inset-6 text-center text-lg opacity-80" aria-hidden>

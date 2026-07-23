@@ -23,13 +23,13 @@ function bindInstallListeners(): void {
     const promptEvent = event as BeforeInstallPromptEvent
     promptEvent.preventDefault()
     deferredPrompt = promptEvent
-    window.dispatchEvent(new Event('benefitaI:pwa-install-available'))
+    window.dispatchEvent(new Event('cvault:pwa-install-available'))
     logInfo('beforeinstallprompt ready for Download button')
   })
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null
-    window.dispatchEvent(new Event('benefitaI:pwa-installed'))
+    window.dispatchEvent(new Event('cvault:pwa-installed'))
     logInfo('PWA installed via Download button')
   })
 }
@@ -60,8 +60,8 @@ export function usePwaInstall() {
     // Chrome often fires beforeinstallprompt shortly after SW is ready.
     const onAvailable = () => setStatus('available')
     const onInstalled = () => setStatus('installed')
-    window.addEventListener('benefitaI:pwa-install-available', onAvailable)
-    window.addEventListener('benefitaI:pwa-installed', onInstalled)
+    window.addEventListener('cvault:pwa-install-available', onAvailable)
+    window.addEventListener('cvault:pwa-installed', onInstalled)
 
     const timeoutId = window.setTimeout(() => {
       setStatus((current) => {
@@ -75,8 +75,8 @@ export function usePwaInstall() {
 
     return () => {
       window.clearTimeout(timeoutId)
-      window.removeEventListener('benefitaI:pwa-install-available', onAvailable)
-      window.removeEventListener('benefitaI:pwa-installed', onInstalled)
+      window.removeEventListener('cvault:pwa-install-available', onAvailable)
+      window.removeEventListener('cvault:pwa-installed', onInstalled)
     }
   }, [])
 

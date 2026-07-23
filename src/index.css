@@ -12,7 +12,9 @@
   --muted: #6b7280;
   --line: #e5e7eb;
   --surface: #ffffff;
-  --canvas: #f9f9fb;
+  --canvas: #fcf8fe;
+  --frame: #efeaf6;
+  --radius-screen: 1.75rem;
 }
 
 html,
@@ -30,9 +32,31 @@ body {
     -apple-system,
     sans-serif;
   color: var(--ink);
-  background: var(--canvas);
+  background: var(--frame);
+  padding: 10px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  min-height: calc(100dvh - 20px);
+}
+
+/* Phone-like rounded screen; transform contains `position: fixed` children */
+.app-screen {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  min-height: calc(100dvh - 20px);
+  background: var(--canvas);
+  border-radius: var(--radius-screen);
+  overflow: hidden;
+  transform: translateZ(0);
+  box-shadow:
+    0 0 0 1px rgba(59, 58, 140, 0.06),
+    0 12px 40px rgba(59, 58, 140, 0.12);
 }
 
 * {
@@ -42,4 +66,21 @@ body {
 button,
 input {
   font: inherit;
+}
+
+/* True phone / PWA standalone: still keep a soft rounded inset */
+@media (display-mode: standalone) {
+  body {
+    padding: 8px;
+    background: var(--frame);
+  }
+
+  #root {
+    min-height: calc(100dvh - 16px);
+  }
+
+  .app-screen {
+    min-height: calc(100dvh - 16px);
+    border-radius: 1.5rem;
+  }
 }

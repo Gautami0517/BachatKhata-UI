@@ -65,10 +65,22 @@ export function useToast() {
 
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong'): string {
   if (typeof error === 'object' && error !== null && 'response' in error) {
-    const response = (error as { response?: { data?: { message?: string | string[] } } }).response
-    const message = response?.data?.message
-    if (Array.isArray(message)) return message.join(', ')
-    if (typeof message === 'string' && message.trim()) return message
+    const axiosLike = error as {
+      response?: { status?: number; data?: { message?: string | string[] } }
+    }
+    const status = axiosLike.response?.status
+    const message = axiosLike.response?.data?.message
+    const fromBody = Array.isArray(message)
+      ? message.join(', ')
+      : typeof message === 'string' && message.trim()
+        ? message
+        : null
+
+    if (fromBody) return fromBody
+    if (status === 401) return 'Session expired. Please sign in again.'
+    if (status === 403) return 'You do not have permission for this action.'
+    if (status === 409) return 'That email is already registered.'
+    if (status === 400) return 'Please check your input and try again.'
   }
   if (error instanceof Error && error.message) return error.message
   return fallback

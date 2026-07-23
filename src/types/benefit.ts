@@ -97,11 +97,14 @@ export type AskResult = {
   score: number
 }
 
+export type AskMatchType = 'product' | 'category_fallback' | 'general' | null
+
 export type AskResponse = {
   query: string
   intent: AskIntent
   totalResults: number
   results: AskResult[]
+  matchType?: AskMatchType
   message?: string
 }
 

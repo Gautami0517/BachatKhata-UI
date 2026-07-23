@@ -24,11 +24,11 @@ export default defineConfig({
 
         description: 'C-Vault — your financial memory vault',
         theme_color: '#3b3a8c',
-        background_color: '#f9f9fb',
+        background_color: '#fcf8fe',
         display: 'standalone',
         orientation: 'portrait-primary',
-        // Installed app opens the existing Dashboard — not the Download page.
-        start_url: '/',
+        // Installed app opens auth first; GuestOnly sends signed-in users to Dashboard.
+        start_url: '/login',
         scope: '/',
         id: '/',
         share_target: {
@@ -42,7 +42,16 @@ export default defineConfig({
             files: [
               {
                 name: 'media',
-                accept: ['image/*', 'text/plain'],
+                // Explicit MIME types help Android show C-Vault for Gallery / screenshot shares.
+                accept: [
+                  'image/*',
+                  'image/jpeg',
+                  'image/png',
+                  'image/webp',
+                  'image/gif',
+                  'image/jpg',
+                  'text/plain',
+                ],
               },
             ],
           },

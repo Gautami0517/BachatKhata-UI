@@ -23,8 +23,8 @@ export function AskBar({ onAsk, onImport, asking }: AskBarProps) {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40">
-      <div className="pointer-events-auto mx-auto max-w-lg px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 mx-auto w-full px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+      <div className="pointer-events-auto">
         {/* Import FAB sits above the search bar, right-aligned */}
         <div className="mb-2 flex justify-end pr-1">
           <button

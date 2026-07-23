@@ -75,7 +75,7 @@ async function handleShareTargetPost(request: Request): Promise<Response> {
     }),
   )
 
-  // Keep raw file blobs available for debugging (optional image support).
+  // Keep raw image/file blobs so /share can run extract-image.
   for (let index = 0; index < mediaEntries.length; index += 1) {
     await cache.put(`/__share_file_${index}__`, new Response(mediaEntries[index]))
   }

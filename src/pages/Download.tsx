@@ -1,9 +1,9 @@
 /**
- * Public install landing — share this URL with users.
- * Download triggers Android Chrome's native PWA install dialog.
- * Installed app still opens at `/` (Dashboard) via manifest start_url.
+ * Public install landing — /download
+ * Branding matches C-Vault (lightning + indigo), not a separate product name.
  */
 import { motion } from 'framer-motion'
+import { LightningIcon, LightningOutlineIcon } from '../components/icons'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 
 export function Download() {
@@ -11,28 +11,20 @@ export function Download() {
 
   const buttonLabel =
     status === 'prompting'
-      ? 'Downloading…'
+      ? 'Installing…'
       : status === 'installed'
         ? 'Open C-Vault'
         : status === 'checking'
           ? 'Preparing…'
           : status === 'unavailable'
             ? 'Install unavailable'
-            : 'Download'
+            : 'Install C-Vault'
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-16">
+    <main className="relative flex min-h-full flex-col items-center justify-center overflow-hidden bg-[#fcf8fe] px-6 py-16">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,#ede9fe_0%,#fafafa_55%,#f5f3ff_100%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-violet-200/40 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-16 bottom-20 h-56 w-56 rounded-full bg-fuchsia-200/30 blur-3xl"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,#e9e5f6_0%,#fcf8fe_55%,#f3f1fa_100%)]"
       />
 
       <motion.div
@@ -41,23 +33,16 @@ export function Download() {
         transition={{ duration: 0.45, ease: 'easeOut' }}
         className="relative z-10 flex w-full max-w-sm flex-col items-center text-center"
       >
-        <motion.img
-          src="/icons/icon-192.png"
-          alt=""
-          width={88}
-          height={88}
-          initial={{ scale: 0.92, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.08, duration: 0.4 }}
-          className="mb-6 rounded-[22px] shadow-[0_12px_40px_rgba(91,33,182,0.18)]"
-        />
+        <div className="mb-6 flex h-[88px] w-[88px] items-center justify-center rounded-full border-2 border-gray-900 bg-[#e9e5f6] shadow-[0_12px_40px_rgba(59,58,140,0.18)]">
+          <LightningIcon className="h-10 w-10 text-gray-900" />
+        </div>
 
-        <p className="text-sm font-semibold tracking-[0.2em] text-violet-500 uppercase">
-          App
-        </p>
-        <h1 className="mt-2 text-5xl font-bold tracking-tight text-violet-700">C-Vault</h1>
+        <div className="flex items-center gap-2">
+          <LightningOutlineIcon className="h-6 w-6 text-gray-900" strokeWidth={1.8} />
+          <h1 className="text-5xl font-bold tracking-tight text-[#3b3a8c]">C-Vault</h1>
+        </div>
         <p className="mt-3 max-w-xs text-base text-gray-500">
-          Save coupons and benefits to your financial memory vault.
+          Save coupons and offers to your financial memory vault.
         </p>
 
         <motion.button
@@ -66,12 +51,13 @@ export function Download() {
           disabled={status === 'checking' || status === 'prompting' || status === 'unavailable'}
           onClick={() => {
             if (status === 'installed') {
-              window.location.assign('/')
+              // Auth gate first; already-signed-in users are redirected to Dashboard.
+              window.location.assign('/login')
               return
             }
             void promptInstall()
           }}
-          className="mt-10 w-full rounded-2xl bg-violet-600 px-6 py-4 text-lg font-semibold text-white shadow-[0_10px_30px_rgba(124,58,237,0.35)] transition enabled:hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-violet-300"
+          className="mt-10 w-full rounded-2xl bg-[#3b3a8c] px-6 py-4 text-lg font-semibold text-white shadow-[0_10px_30px_rgba(59,58,140,0.3)] transition enabled:hover:bg-[#2f2e70] disabled:cursor-not-allowed disabled:bg-[#9b9ac4]"
         >
           {buttonLabel}
         </motion.button>
@@ -83,7 +69,7 @@ export function Download() {
             .
           </p>
         ) : (
-          <p className="mt-4 text-sm text-gray-400">Android Chrome · one tap to install</p>
+          <p className="mt-4 text-sm text-gray-400">Android Chrome · install C-Vault to your home screen</p>
         )}
       </motion.div>
     </main>

@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useAuth } from '../auth/AuthContext'
 import { NotificationService } from '../services/NotificationService'
 import { logInfo } from '../utils/logger'
 
@@ -27,6 +28,7 @@ type NotificationContextValue = {
 const NotificationContext = createContext<NotificationContextValue | null>(null)
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isBootstrapping } = useAuth()
   const supported = NotificationService.isSupported()
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>(
     () => NotificationService.getPermission(),
@@ -41,14 +43,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setPreferenceEnabled(NotificationService.getPreferenceEnabled())
   }, [])
 
+  // Only sync push with backend when JWT exists (subscribe is auth-required).
   useEffect(() => {
     refresh()
+    if (isBootstrapping || !isAuthenticated) return
     void NotificationService.syncOnLaunch().then(() => refresh())
-    logInfo('NotificationProvider mounted', {
+    logInfo('NotificationProvider sync (authenticated)', {
       supported,
       permission: NotificationService.getPermission(),
     })
-  }, [refresh, supported])
+  }, [refresh, supported, isAuthenticated, isBootstrapping])
 
   const enable = useCallback(async () => {
     setBusy(true)

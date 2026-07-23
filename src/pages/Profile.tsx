@@ -1,14 +1,20 @@
 /**
- * Profile — notification settings (ON / OFF). Mock user chrome only.
+ * Profile — real user from JWT session + notification settings + logout.
  */
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { useAuth, userInitials } from '../auth/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { getErrorMessage, useToast } from '../components/ToastProvider'
 
 export function Profile() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { pushToast } = useToast()
+  const { user, logout } = useAuth()
   const { supported, permission, enabled, busy, enable, disable } = useNotifications()
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const setOn = async () => {
     const result = await enable()
@@ -28,8 +34,25 @@ export function Profile() {
     pushToast('Notifications turned OFF', 'info')
   }
 
+  const onLogout = async () => {
+    setLoggingOut(true)
+    try {
+      await logout()
+      queryClient.clear()
+      navigate('/login', { replace: true })
+    } catch (error) {
+      queryClient.clear()
+      pushToast(getErrorMessage(error, 'Logout failed'))
+      navigate('/login', { replace: true })
+    } finally {
+      setLoggingOut(false)
+    }
+  }
+
+  const initials = userInitials(user?.name)
+
   return (
-    <main className="mx-auto min-h-[100dvh] max-w-lg bg-[#f9f9fb] px-5 pb-10 pt-4">
+    <main className="mx-auto min-h-full bg-[#fcf8fe] px-5 pb-10 pt-4">
       <header className="mb-6 flex items-center gap-3">
         <button type="button" onClick={() => navigate(-1)} className="text-xl text-gray-800" aria-label="Back">
           ←
@@ -39,11 +62,11 @@ export function Profile() {
 
       <section className="mb-5 flex items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e9e5f6] text-sm font-bold text-[#3b3a8c]">
-          PR
+          {initials}
         </span>
-        <div>
-          <p className="font-semibold text-gray-900">Prajwal</p>
-          <p className="text-xs text-gray-500">C-Vault demo account</p>
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-gray-900">{user?.name || 'Account'}</p>
+          <p className="truncate text-xs text-gray-500">{user?.email || ''}</p>
         </div>
       </section>
 
@@ -101,6 +124,15 @@ export function Profile() {
           </>
         )}
       </section>
+
+      <button
+        type="button"
+        onClick={() => void onLogout()}
+        disabled={loggingOut}
+        className="mt-6 w-full rounded-full border border-red-200 bg-white py-3 text-sm font-semibold text-red-600 disabled:opacity-60"
+      >
+        {loggingOut ? 'Signing out…' : 'Sign out'}
+      </button>
     </main>
   )
 }
