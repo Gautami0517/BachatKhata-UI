@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { logInfo } from './utils/logger'
 
-logInfo('Bootstrapping BenefitAI')
+logInfo('Bootstrapping C-Vault')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

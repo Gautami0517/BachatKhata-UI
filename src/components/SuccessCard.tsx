@@ -1,13 +1,11 @@
 /**
- * Success confirmation after a benefit is imported.
- * Shown briefly (~1s) before auto-navigating to the Dashboard.
+ * Success confirmation after import / save.
  */
 import { motion } from 'framer-motion'
 import type { Benefit } from '../types/benefit'
 import {
   formatCurrency,
   formatDiscount,
-  formatExpiryLabel,
   getBenefitLabel,
   getBenefitSubtitle,
   getBrandInitials,
@@ -23,61 +21,58 @@ export function SuccessCard({ benefit, onViewDashboard }: SuccessCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.35 }}
-      className="flex min-h-[70vh] flex-col items-center justify-center px-5 py-8"
+      className="flex min-h-[100dvh] flex-col items-center justify-center bg-white px-5 py-10"
     >
-      <div className="w-full max-w-md text-center">
-        <motion.div
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-          className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-4xl text-white shadow-lg shadow-emerald-200"
-        >
+      <div className="relative">
+        <div className="absolute -inset-6 text-center text-lg opacity-80" aria-hidden>
+          <span className="absolute left-0 top-2 text-yellow-400">◆</span>
+          <span className="absolute right-2 top-0 text-sky-400">●</span>
+          <span className="absolute bottom-0 left-4 text-emerald-400">■</span>
+          <span className="absolute bottom-2 right-0 text-violet-400">●</span>
+        </div>
+        <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-4xl text-white shadow-lg shadow-emerald-200">
           ✓
-        </motion.div>
+        </div>
+      </div>
 
-        <h1 className="mt-5 text-2xl font-bold text-gray-900">Benefit Imported Successfully</h1>
-        <p className="mt-2 text-sm text-gray-500">Your offer has been saved to Financial Memory.</p>
+      <h1 className="mt-5 text-2xl font-bold text-gray-900">Offer Imported!</h1>
+      <p className="mt-1 text-sm text-gray-500">Your offer has been saved successfully</p>
 
-        <div className="mt-6 rounded-[28px] border border-gray-100 bg-white p-5 text-left shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-sm font-bold text-violet-700">
-              {getBrandInitials(label)}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">{label}</p>
-              <p className="text-sm text-gray-500">{getBenefitSubtitle(benefit)}</p>
-            </div>
+      <div className="mt-6 w-full max-w-md rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-sm font-bold text-violet-700">
+            {getBrandInitials(label)}
           </div>
-
-          <dl className="mt-5 space-y-3 text-sm">
-            <Row label="Discount" value={formatDiscount(benefit)} accent="green" />
-            <Row
-              label="Coupon Code"
-              value={benefit.couponCode?.trim() || '—'}
-              mono={Boolean(benefit.couponCode)}
-            />
-            <Row label="Potential Savings" value={formatCurrency(benefit.maximumDiscount)} accent="green" />
-            <Row
-              label="Merchant"
-              value={benefit.merchant?.trim() || benefit.brand?.trim() || label}
-            />
-            <Row label="Expiry" value={formatExpiryLabel(benefit.expiryDate)} />
-          </dl>
+          <div>
+            <p className="font-semibold text-gray-900">{label}</p>
+            <p className="text-sm text-gray-500">{getBenefitSubtitle(benefit)}</p>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onViewDashboard}
-          className="mt-6 w-full rounded-full bg-violet-600 px-5 py-3.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:bg-violet-700"
-        >
-          View Dashboard
-        </button>
-        <p className="mt-3 text-xs text-gray-400">Redirecting in 1 sec…</p>
+        <dl className="mt-5 divide-y divide-gray-100 text-sm">
+          <Row label="Discount" value={formatDiscount(benefit)} accent />
+          <Row label="Voucher Code" value={benefit.couponCode?.trim() || '—'} mono />
+          <Row
+            label="Max Savings"
+            value={
+              benefit.maximumDiscount != null
+                ? `Up to ${formatCurrency(benefit.maximumDiscount)}`
+                : '—'
+            }
+            accent
+          />
+        </dl>
       </div>
+
+      <button
+        type="button"
+        onClick={onViewDashboard}
+        className="mt-8 w-full max-w-md rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3.5 text-sm font-semibold text-white shadow-md"
+      >
+        View Dashboard
+      </button>
     </motion.div>
   )
 }
@@ -90,16 +85,16 @@ function Row({
 }: {
   label: string
   value: string
-  accent?: 'green'
+  accent?: boolean
   mono?: boolean
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center justify-between gap-3 py-3">
       <dt className="text-gray-500">{label}</dt>
       <dd
-        className={`text-right font-semibold ${
-          accent === 'green' ? 'text-emerald-600' : 'text-gray-900'
-        } ${mono ? 'font-mono text-xs' : ''}`}
+        className={`text-right font-semibold ${accent ? 'text-emerald-600' : 'text-gray-900'} ${
+          mono ? 'font-mono text-xs' : ''
+        }`}
       >
         {value}
       </dd>

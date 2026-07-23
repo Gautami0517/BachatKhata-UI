@@ -1,18 +1,18 @@
 @import 'tailwindcss';
 
-/* BenefitAI design tokens — purple accent, Material 3–inspired calm UI */
+/* C-Vault design tokens */
 :root {
   color-scheme: light;
-  --brand: #7c3aed;
-  --brand-soft: #f3e8ff;
-  --brand-dark: #5b21b6;
+  --brand: #3b3a8c;
+  --brand-soft: #e9e5f6;
+  --brand-dark: #2f2e70;
   --success: #16a34a;
   --danger: #dc2626;
   --ink: #111827;
   --muted: #6b7280;
   --line: #e5e7eb;
   --surface: #ffffff;
-  --canvas: #fafafa;
+  --canvas: #f9f9fb;
 }
 
 html,

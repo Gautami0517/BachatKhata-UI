@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /**
- * BenefitAI — Share Target + Financial Memory vertical slice.
+ * C-Vault — Share Target + Financial Memory vertical slice.
  * injectManifest keeps Android Share Sheet POST handling in our custom SW.
  */
 export default defineConfig({
@@ -21,9 +21,10 @@ export default defineConfig({
       manifest: {
         name: 'C-Vault',
         short_name: 'C-Vault',
-        description: 'AI Financial Memory Agent',
-        theme_color: '#7C3AED',
-        background_color: '#ffffff',
+
+        description: 'C-Vault — your financial memory vault',
+        theme_color: '#3b3a8c',
+        background_color: '#f9f9fb',
         display: 'standalone',
         orientation: 'portrait-primary',
         // Installed app opens the existing Dashboard — not the Download page.

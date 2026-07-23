@@ -1,136 +1,133 @@
 /**
- * Animated import experience — communicates AI understanding while the API runs.
- * Step 1 completes immediately; step 2 stays active during the request;
- * steps 3–4 complete after success (with a minimum 2.5s overall duration).
+ * 3-step import stepper matching C-Vault "Importing your offer" screen.
  */
-import { AnimatePresence, motion } from 'framer-motion'
+import type { ReactNode } from 'react'
 
-export type ImportStepStatus = 'pending' | 'active' | 'done'
+export type StepState = 'done' | 'active' | 'pending'
 
-export type ImportStep = {
-  id: string
-  label: string
-  icon: string
-  status: ImportStepStatus
+export type ImportStepItem = {
+  title: string
+  subtitle: string
+  status: StepState
 }
 
 type ImportProgressProps = {
-  steps: ImportStep[]
-  rawText: string
+  steps: ImportStepItem[]
+  preview?: ReactNode
+  title?: string
+  subtitle?: string
+  onBack?: () => void
 }
 
-export function ImportProgress({ steps, rawText }: ImportProgressProps) {
+export function ImportProgress({
+  steps,
+  preview,
+  title = 'Importing your offer',
+  subtitle = 'Please wait while we process',
+  onBack,
+}: ImportProgressProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.35 }}
-      className="flex min-h-[70vh] flex-col items-center justify-center px-5 py-8"
-    >
-      <div className="w-full max-w-md rounded-[28px] border border-gray-100 bg-white p-6 shadow-sm">
-        <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-3xl bg-violet-50">
-          <motion.div
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-            className="text-5xl"
-            aria-hidden
-          >
-            🤖
-          </motion.div>
-        </div>
+    <div className="mx-auto flex min-h-[100dvh] max-w-lg flex-col bg-[#f7f7f8] px-5 pb-8 pt-4">
+      {onBack && (
+        <button type="button" onClick={onBack} className="mb-2 w-fit text-xl text-gray-800" aria-label="Back">
+          ←
+        </button>
+      )}
 
-        <h1 className="text-center text-2xl font-bold tracking-tight text-gray-900">
-          Importing Your Benefit
-        </h1>
-        <p className="mt-2 text-center text-sm leading-relaxed text-gray-500">
-          BenefitAI is understanding your offer and securely saving it to your Financial Memory.
-        </p>
-
-        <ol className="mt-8 space-y-0">
-          {steps.map((step, index) => (
-            <li key={step.id} className="relative flex gap-3 pb-6 last:pb-0">
-              {index < steps.length - 1 && (
-                <span
-                  className={`absolute left-[15px] top-8 h-[calc(100%-1.5rem)] w-px ${
-                    step.status === 'done' ? 'bg-violet-300' : 'bg-gray-200'
-                  }`}
-                  aria-hidden
-                />
-              )}
-
-              <StepIcon status={step.status} icon={step.icon} />
-
-              <div className="pt-0.5">
-                <p
-                  className={`text-sm font-semibold ${
-                    step.status === 'pending' ? 'text-gray-400' : 'text-gray-900'
-                  }`}
-                >
-                  {step.label}
-                </p>
-                <AnimatePresence>
-                  {step.status === 'active' && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="mt-0.5 text-xs text-violet-600"
-                    >
-                      In progress…
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        {rawText && (
-          <div className="mt-2 rounded-2xl bg-violet-50 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-500">
-              Shared offer
-            </p>
-            <p className="mt-1 line-clamp-4 text-sm leading-relaxed text-violet-900/80">
-              “{rawText}”
-            </p>
+      <div className="mt-4 flex flex-col items-center">
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-violet-100" />
+          <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-violet-600 text-2xl text-white">
+            ⚡
           </div>
-        )}
+          <div className="absolute inset-x-[-24px] top-1/2 z-0 border-t-2 border-dashed border-sky-400" />
+        </div>
+        <h1 className="mt-5 text-center text-2xl font-bold text-gray-900">{title}</h1>
+        <p className="mt-1 text-center text-sm text-gray-500">{subtitle}</p>
       </div>
-    </motion.div>
+
+      <ol className="mt-10 space-y-0 px-2">
+        {steps.map((step, index) => (
+          <li key={step.title} className="relative flex gap-3 pb-8 last:pb-0">
+            {index < steps.length - 1 && (
+              <span
+                className={`absolute left-[15px] top-8 h-[calc(100%-1.75rem)] w-0.5 ${
+                  step.status === 'done' ? 'bg-violet-500' : 'bg-gray-200'
+                }`}
+              />
+            )}
+            <StepDot status={step.status} />
+            <div>
+              <p
+                className={`text-sm font-semibold ${
+                  step.status === 'pending' ? 'text-gray-400' : 'text-gray-900'
+                }`}
+              >
+                {step.title}
+              </p>
+              <p className={`text-xs ${step.status === 'pending' ? 'text-gray-300' : 'text-gray-500'}`}>
+                {step.subtitle}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      {preview && <div className="mt-auto pt-4">{preview}</div>}
+    </div>
   )
 }
 
-function StepIcon({ status, icon }: { status: ImportStepStatus; icon: string }) {
+function StepDot({ status }: { status: StepState }) {
   if (status === 'done') {
     return (
-      <motion.span
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-600 text-sm text-white"
-      >
+      <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-600 text-sm text-white">
         ✓
-      </motion.span>
-    )
-  }
-
-  if (status === 'active') {
-    return (
-      <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-base shadow-[0_0_0_4px_rgba(124,58,237,0.12)]">
-        <motion.span
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-          className="inline-block"
-        >
-          {icon}
-        </motion.span>
       </span>
     )
   }
+  if (status === 'active') {
+    return (
+      <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-violet-600 bg-white">
+        <span className="h-2.5 w-2.5 rounded-full bg-violet-600" />
+      </span>
+    )
+  }
+  return <span className="relative z-10 h-8 w-8 shrink-0 rounded-full border-2 border-gray-200 bg-white" />
+}
 
+/** Preview card under the stepper after extract-image */
+export function ExtractionPreviewCard({
+  title,
+  discountLabel,
+  couponCode,
+}: {
+  title: string
+  discountLabel: string
+  couponCode: string | null
+}) {
   return (
-    <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-sm opacity-50">
-      {icon}
-    </span>
+    <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+      <div className="flex gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white">
+          🏷
+        </div>
+        <p className="text-sm leading-relaxed text-gray-800">
+          <span className="font-bold text-gray-900">{discountLabel}</span>
+          {title ? ` on ${title}` : ''}
+        </p>
+      </div>
+      {couponCode && (
+        <>
+          <div className="my-3 border-t border-violet-100" />
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+            Voucher Code
+          </p>
+          <div className="mt-1.5 inline-block rounded-lg bg-white px-3 py-1.5 text-sm font-bold text-violet-700">
+            {couponCode}
+          </div>
+        </>
+      )}
+    </div>
   )
 }

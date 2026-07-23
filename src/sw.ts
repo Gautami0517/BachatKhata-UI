@@ -12,7 +12,7 @@ import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 declare let self: ServiceWorkerGlobalScope
 
-const SHARE_CACHE = 'benefitaI-share-payload'
+const SHARE_CACHE = 'c-vault-share-payload'
 const SHARE_PAYLOAD_KEY = '/__last_share_payload__'
 
 precacheAndRoute(self.__WB_MANIFEST)
@@ -113,4 +113,90 @@ self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     void self.skipWaiting()
   }
+})
+
+/**
+ * Web Push — show a system notification.
+ * Payload shape is intentionally generic (title/body/url/type/…) for future
+ * expiry, recommendation, and system updates.
+ */
+self.addEventListener('push', (event) => {
+  console.log('[SW] push event')
+
+  event.waitUntil(
+    (async () => {
+      let payload: {
+        title?: string
+        body?: string
+        icon?: string
+        badge?: string
+        url?: string
+        type?: string
+        benefitId?: string
+      } = {}
+
+      try {
+        if (event.data) {
+          payload = event.data.json() as typeof payload
+        }
+      } catch {
+        payload = { body: event.data?.text() }
+      }
+
+      const title = payload.title?.trim() || 'C-Vault'
+      const options: NotificationOptions = {
+        body: payload.body?.trim() || 'You have a new C-Vault update.',
+        icon: payload.icon || '/icons/icon-192.png',
+        badge: payload.badge || '/icons/badge-72.png',
+        data: {
+          url: payload.url || '/',
+          type: payload.type,
+          benefitId: payload.benefitId,
+        },
+        // Keep types open — do not special-case notification kinds here.
+      }
+
+      console.log('[SW] showing notification', { title, type: payload.type })
+      await self.registration.showNotification(title, options)
+    })(),
+  )
+})
+
+/**
+ * Tap notification → focus an open C-Vault client, else open "/".
+ */
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] notificationclick', event.notification.data)
+  event.notification.close()
+
+  const targetPath =
+    typeof event.notification.data?.url === 'string' && event.notification.data.url
+      ? event.notification.data.url
+      : '/'
+
+  event.waitUntil(
+    (async () => {
+      const absoluteUrl = new URL(targetPath, self.location.origin).href
+      const windowClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      })
+
+      for (const client of windowClients) {
+        if ('focus' in client) {
+          await client.focus()
+          if ('navigate' in client && typeof client.navigate === 'function') {
+            try {
+              await client.navigate(absoluteUrl)
+            } catch {
+              // Older clients may not support navigate — focusing is enough.
+            }
+          }
+          return
+        }
+      }
+
+      await self.clients.openWindow(absoluteUrl)
+    })(),
+  )
 })

@@ -1,9 +1,9 @@
 {
-  "name": "benefitaI-ui",
+  "name": "c-vault-ui",
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "description": "BenefitAI — Share Target import → Financial Memory dashboard",
+  "description": "C-Vault — Share Target import → Financial Memory dashboard",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

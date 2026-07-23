@@ -29,5 +29,5 @@ export const EMPTY_SHARE_PAYLOAD: SharePayload = {
   raw: {},
 }
 
-export const SHARE_CACHE_NAME = 'benefitaI-share-payload'
+export const SHARE_CACHE_NAME = 'c-vault-share-payload'
 export const SHARE_PAYLOAD_CACHE_URL = '/__last_share_payload__'

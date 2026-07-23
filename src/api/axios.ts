@@ -9,20 +9,21 @@ const baseURL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 if (!baseURL && import.meta.env.DEV) {
   console.warn(
-    '[BenefitAI] VITE_API_BASE_URL is not set. In dev, set it to your API (e.g. http://localhost:3000).',
+    '[C-Vault] VITE_API_BASE_URL is not set. API calls will fail until .env is configured.',
   )
 }
 
 export const api = axios.create({
   baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   timeout: 60_000,
 })
 
 api.interceptors.request.use((config) => {
-  console.log('[BenefitAI] API request', {
+  // JSON by default; FormData must keep browser-generated multipart boundary.
+  if (!(config.data instanceof FormData) && !config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json'
+  }
+  console.log('[C-Vault] API request', {
     method: config.method,
     url: `${config.baseURL ?? ''}${config.url ?? ''}`,
   })
@@ -31,14 +32,14 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    console.log('[BenefitAI] API response', {
+    console.log('[C-Vault] API response', {
       status: response.status,
       url: response.config.url,
     })
     return response
   },
   (error: unknown) => {
-    console.error('[BenefitAI] API error', error)
+    console.error('[C-Vault] API error', error)
     return Promise.reject(error)
   },
 )

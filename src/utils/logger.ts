@@ -1,4 +1,4 @@
-const PREFIX = '[BenefitAI]'
+const PREFIX = '[C-Vault]'
 
 export function logInfo(event: string, detail?: unknown): void {
   if (detail === undefined) {

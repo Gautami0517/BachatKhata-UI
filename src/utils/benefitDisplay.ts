@@ -1,37 +1,54 @@
 import type { Benefit } from '../types/benefit'
 
 /** Brand → Merchant → Title fallback for card headings. Never returns empty. */
-export function getBenefitLabel(benefit: Benefit): string {
+export function getBenefitLabel(benefit: {
+  displayName?: string | null
+  merchant?: string | null
+  brand?: string | null
+  title?: string | null
+}): string {
   const label =
-    benefit.brand?.trim() ||
-    benefit.merchant?.trim() ||
     benefit.displayName?.trim() ||
+    benefit.merchant?.trim() ||
+    benefit.brand?.trim() ||
     benefit.title?.trim()
 
   return label || 'Benefit'
 }
 
 /** Secondary line under the brand — prefers title, then merchant. */
-export function getBenefitSubtitle(benefit: Benefit): string {
+export function getBenefitSubtitle(benefit: {
+  displayName?: string | null
+  merchant?: string | null
+  brand?: string | null
+  title?: string | null
+  category?: string | null
+}): string {
   const title = benefit.title?.trim()
   const merchant = benefit.merchant?.trim()
   const brand = benefit.brand?.trim()
+  const label = getBenefitLabel(benefit)
 
-  if (title && title !== getBenefitLabel(benefit)) return title
-  if (merchant && merchant !== getBenefitLabel(benefit)) return merchant
-  if (brand && brand !== getBenefitLabel(benefit)) return brand
+  if (title && title !== label) return title
+  if (merchant && merchant !== label) return merchant
+  if (brand && brand !== label) return brand
   return benefit.category?.trim() || 'Saved offer'
 }
 
-export function formatDiscount(benefit: Benefit): string {
+export function formatDiscount(benefit: {
+  discountType?: string | null
+  discountValue?: number | null
+}): string {
   const value = benefit.discountValue
+  const type = benefit.discountType
+
   if (value == null) {
-    if (benefit.discountType === 'FREEBIE') return 'Freebie'
-    if (benefit.discountType === 'OTHER') return 'Special offer'
+    if (type === 'FREEBIE') return 'Freebie'
+    if (type === 'OTHER') return 'Special offer'
     return 'Offer'
   }
 
-  switch (benefit.discountType) {
+  switch (type) {
     case 'PERCENTAGE':
       return `${formatNumber(value)}% OFF`
     case 'FLAT':
