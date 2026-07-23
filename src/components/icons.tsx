@@ -79,3 +79,90 @@ export function SearchIcon({ className = 'h-5 w-5', strokeWidth = 1.7 }: IconPro
     </svg>
   )
 }
+
+/** Scissors / cut — coupon card actions */
+export function ScissorsIcon({ className = 'h-4 w-4', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="6" cy="6" r="2.5" />
+      <circle cx="6" cy="18" r="2.5" />
+      <path d="M8.2 7.8 20 18" />
+      <path d="M8.2 16.2 14 12 8.2 7.8" />
+      <path d="M14 12 20 6" />
+    </svg>
+  )
+}
+
+/** Three sparkles — Relevance / benefitScore */
+export function SparklesIcon({ className = 'h-3.5 w-3.5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden className={className} fill="currentColor">
+      <path d="M8 1.2 8.95 5.05 12.8 6 8.95 6.95 8 10.8 7.05 6.95 3.2 6 7.05 5.05 8 1.2z" />
+      <path d="M12.6 8.4 13.15 10.35 15.1 10.9 13.15 11.45 12.6 13.4 12.05 11.45 10.1 10.9 12.05 10.35 12.6 8.4z" />
+      <path d="M3.5 9.2 3.9 10.65 5.35 11.05 3.9 11.45 3.5 12.9 3.1 11.45 1.65 11.05 3.1 10.65 3.5 9.2z" />
+    </svg>
+  )
+}
+
+export function TrashIcon({ className = 'h-5 w-5', strokeWidth = 1.8 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 7h16" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      <path d="M7 7v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  )
+}
+
+export function CheckCircleIcon({ className = 'h-5 w-5', strokeWidth = 1.8 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.5 12.2 2.4 2.4 4.6-5" />
+    </svg>
+  )
+}
+
+export function CloseIcon({ className = 'h-5 w-5', strokeWidth = 1.8 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+    >
+      <path d="M7 7 17 17M17 7 7 17" />
+    </svg>
+  )
+}

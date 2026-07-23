@@ -2,8 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   askBenefits,
   BENEFITS_QUERY_KEY,
+  deleteBenefit,
   extractImage,
   importBenefit,
+  markBenefitUnused,
+  markBenefitUsed,
   saveExtracted,
 } from '../api/benefits'
 import type { ImportBenefitRequest, SaveExtractedPayload } from '../types/benefit'
@@ -39,6 +42,39 @@ export function useSaveExtracted() {
     mutationFn: (payload: SaveExtractedPayload) => saveExtracted(payload),
     onSuccess: async (benefit) => {
       logInfo('Save extracted succeeded', benefit.id)
+      await queryClient.invalidateQueries({ queryKey: BENEFITS_QUERY_KEY })
+    },
+  })
+}
+
+export function useDeleteBenefit() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteBenefit(id),
+    onSuccess: async (_void, id) => {
+      logInfo('Benefit deleted', id)
+      await queryClient.invalidateQueries({ queryKey: BENEFITS_QUERY_KEY })
+    },
+  })
+}
+
+export function useMarkBenefitUsed() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => markBenefitUsed(id),
+    onSuccess: async (benefit) => {
+      logInfo('Benefit marked used', benefit.id)
+      await queryClient.invalidateQueries({ queryKey: BENEFITS_QUERY_KEY })
+    },
+  })
+}
+
+export function useMarkBenefitUnused() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => markBenefitUnused(id),
+    onSuccess: async (benefit) => {
+      logInfo('Benefit marked unused', benefit.id)
       await queryClient.invalidateQueries({ queryKey: BENEFITS_QUERY_KEY })
     },
   })

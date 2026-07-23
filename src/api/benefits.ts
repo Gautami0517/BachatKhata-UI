@@ -3,6 +3,7 @@ import type {
   AskResponse,
   Benefit,
   BenefitSort,
+  BenefitStatus,
   CouponPreview,
   ImportBenefitRequest,
   SaveExtractedPayload,
@@ -13,6 +14,7 @@ export const BENEFITS_QUERY_KEY = ['benefits'] as const
 export type ListBenefitsParams = {
   sort?: BenefitSort
   category?: string | null
+  status?: BenefitStatus
 }
 
 export async function fetchBenefits(
@@ -21,6 +23,7 @@ export async function fetchBenefits(
   const { data } = await api.get<Benefit[]>('/benefits', {
     params: {
       sort: params.sort ?? 'expiring_soon',
+      status: params.status ?? 'unused',
       ...(params.category ? { category: params.category } : {}),
     },
   })
@@ -63,5 +66,22 @@ export async function saveExtracted(
   payload: SaveExtractedPayload,
 ): Promise<Benefit> {
   const { data } = await api.post<Benefit>('/benefits/save', payload)
+  return data
+}
+
+/** DELETE /benefits/:id — 204 No Content */
+export async function deleteBenefit(id: string): Promise<void> {
+  await api.delete(`/benefits/${id}`)
+}
+
+/** POST /benefits/:id/mark-used */
+export async function markBenefitUsed(id: string): Promise<Benefit> {
+  const { data } = await api.post<Benefit>(`/benefits/${id}/mark-used`)
+  return data
+}
+
+/** POST /benefits/:id/mark-unused */
+export async function markBenefitUnused(id: string): Promise<Benefit> {
+  const { data } = await api.post<Benefit>(`/benefits/${id}/mark-unused`)
   return data
 }

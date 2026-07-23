@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { AskBar } from '../components/AskBar'
 import { CouponCard } from '../components/CouponCard'
 import { EmptyState } from '../components/EmptyState'
-import { FilterSlidersIcon, LightningIcon, LightningOutlineIcon } from '../components/icons'
+import { FilterSlidersIcon, LightningIcon, LightningOutlineIcon, SparklesIcon } from '../components/icons'
 import { ImportSheet } from '../components/ImportSheet'
 import { LoadingCardList } from '../components/LoadingCard'
 import { getErrorMessage, useToast } from '../components/ToastProvider'
@@ -16,11 +16,11 @@ import { useBenefits } from '../hooks/useBenefits'
 import { FIXED_CATEGORIES, type BenefitSort } from '../types/benefit'
 import { groupBenefitsByExpiry } from '../utils/benefitDisplay'
 
-const SORT_CHIPS: Array<{ id: BenefitSort; label: string }> = [
+const SORT_CHIPS: Array<{ id: BenefitSort; label: string; sparkle?: boolean }> = [
   { id: 'newest', label: 'Newest' },
   { id: 'highest_discount_pct', label: 'Highest %' },
   { id: 'highest_savings', label: '₹ Highest' },
-  { id: 'brand_az', label: 'A-Z' },
+  { id: 'highest_score', label: 'Relevance', sparkle: true },
 ]
 
 const GROUP_HEADER: Record<string, string> = {
@@ -104,12 +104,15 @@ export function Dashboard() {
                 key={chip.id}
                 type="button"
                 onClick={() => setSort(chip.id)}
-                className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium ${
                   selected
-                    ? 'bg-[#3b3a8c] text-white'
+                    ? 'bg-gray-900 text-white'
                     : 'border border-gray-300 bg-white text-gray-700'
                 }`}
               >
+                {chip.sparkle && (
+                  <SparklesIcon className={`h-3.5 w-3.5 ${selected ? 'text-white' : 'text-gray-700'}`} />
+                )}
                 {chip.label}
               </button>
             )
@@ -216,6 +219,7 @@ export function Dashboard() {
                       benefit={benefit}
                       index={index}
                       urgency={group.key}
+                      showActions
                     />
                   ))}
                 </div>

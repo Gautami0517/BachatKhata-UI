@@ -16,7 +16,7 @@ export function NotificationLaunchPrompt() {
   useEffect(() => {
     if (!supported) return
 
-    // Wait briefly so preference/permission state has settled after syncOnLaunch.
+    // Wait briefly so preference/permission state has settled after syncAfterLogin.
     const timer = window.setTimeout(() => {
       if (enabled) return
       // Browser already blocked — Profile can still explain; no nag popup.

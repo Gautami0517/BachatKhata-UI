@@ -5,8 +5,10 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, userInitials } from '../auth/AuthContext'
-import { useNotifications } from '../hooks/useNotifications'
 import { getErrorMessage, useToast } from '../components/ToastProvider'
+import { useBenefits } from '../hooks/useBenefits'
+import { useNotifications } from '../hooks/useNotifications'
+import { NotificationService } from '../services/NotificationService'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -14,7 +16,9 @@ export function Profile() {
   const { pushToast } = useToast()
   const { user, logout } = useAuth()
   const { supported, permission, enabled, busy, enable, disable } = useNotifications()
+  const { data: benefits } = useBenefits({ sort: 'newest' })
   const [loggingOut, setLoggingOut] = useState(false)
+  const [testing, setTesting] = useState(false)
 
   const setOn = async () => {
     const result = await enable()
@@ -32,6 +36,25 @@ export function Profile() {
       return
     }
     pushToast('Notifications turned OFF', 'info')
+  }
+
+  const onTestPush = async () => {
+    const benefitId = benefits?.[0]?.id
+    if (!benefitId) {
+      pushToast('Import a benefit first, then try a test push')
+      return
+    }
+    setTesting(true)
+    try {
+      const result = await NotificationService.sendTest(benefitId)
+      if (!result.ok) {
+        pushToast(result.reason || 'Test push failed')
+        return
+      }
+      pushToast('Test push sent — check your device', 'success')
+    } finally {
+      setTesting(false)
+    }
   }
 
   const onLogout = async () => {
@@ -120,6 +143,17 @@ export function Profile() {
                 Permission is blocked at the browser level. Change it in site settings, then tap
                 ON again.
               </p>
+            )}
+
+            {enabled && (
+              <button
+                type="button"
+                disabled={testing || busy}
+                onClick={() => void onTestPush()}
+                className="mt-4 w-full rounded-full border border-gray-200 bg-gray-50 py-2.5 text-xs font-semibold text-gray-700 disabled:opacity-60"
+              >
+                {testing ? 'Sending…' : 'Send test push'}
+              </button>
             )}
           </>
         )}

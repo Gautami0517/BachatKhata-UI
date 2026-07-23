@@ -1,8 +1,14 @@
 /**
- * Isolated Web Push helpers — no React.
- * Handles permission, PushManager subscribe/unsubscribe, and backend sync.
+ * Web Push helpers — JWT-scoped backend subscriptions.
+ * Never POST /notifications/subscribe without an access token.
  */
-import { subscribePush, unsubscribePush } from '../api/notifications'
+import { getAccessToken } from '../api/authStorage'
+import {
+  fetchVapidPublicKey,
+  subscribePush,
+  testPush,
+  unsubscribePush,
+} from '../api/notifications'
 import type { PushSubscriptionPayload } from '../types/notifications'
 import { logError, logInfo, logWarn } from '../utils/logger'
 
@@ -28,7 +34,6 @@ export class NotificationService {
   static getPreferenceEnabled(): boolean {
     const raw = localStorage.getItem(PREF_KEY)
     if (raw === null) {
-      // Default ON once permission is granted.
       return Notification.permission === 'granted'
     }
     return raw === 'true'
@@ -46,15 +51,24 @@ export class NotificationService {
     localStorage.setItem(DENIED_KEY, 'true')
   }
 
-  static getVapidPublicKey(): string | null {
+  static getVapidPublicKeyFromEnv(): string | null {
     const key = import.meta.env.VITE_VAPID_PUBLIC_KEY?.trim()
     return key || null
   }
 
-  /**
-   * Request browser permission (user gesture recommended).
-   * Does not re-prompt if already denied.
-   */
+  /** Prefer build-time key; fall back to GET /notifications/vapid-public-key. */
+  static async resolveVapidPublicKey(): Promise<string | null> {
+    const fromEnv = this.getVapidPublicKeyFromEnv()
+    if (fromEnv) return fromEnv
+    try {
+      const fromApi = await fetchVapidPublicKey()
+      return fromApi?.trim() || null
+    } catch (error) {
+      logWarn('Could not fetch VAPID public key', error)
+      return null
+    }
+  }
+
   static async requestPermission(): Promise<NotificationPermission | 'unsupported'> {
     if (!this.isSupported()) {
       logWarn('Push API unsupported in this browser')
@@ -82,7 +96,6 @@ export class NotificationService {
     }
   }
 
-  /** Convert VAPID key to Uint8Array for PushManager.subscribe. */
   static urlBase64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
@@ -111,19 +124,29 @@ export class NotificationService {
   }
 
   /**
-   * Ensure SW is ready, subscribe with VAPID key, POST to backend.
+   * Ensure PushManager subscription exists and POST to backend under JWT user.
+   * Always POSTs (upsert) so obsolete "default" userId rows are overwritten.
    */
-  static async enable(): Promise<{ ok: boolean; reason?: string }> {
+  static async registerWithBackend(options: {
+    requestPermission: boolean
+  }): Promise<{ ok: boolean; reason?: string }> {
     if (!this.isSupported()) {
       return { ok: false, reason: 'Push notifications are not supported in this browser.' }
     }
 
-    const vapidKey = this.getVapidPublicKey()
+    if (!getAccessToken()) {
+      return { ok: false, reason: 'Sign in required before enabling notifications.' }
+    }
+
+    const vapidKey = await this.resolveVapidPublicKey()
     if (!vapidKey) {
       return { ok: false, reason: 'VITE_VAPID_PUBLIC_KEY is not configured.' }
     }
 
-    const permission = await this.requestPermission()
+    let permission: NotificationPermission | 'unsupported' = Notification.permission
+    if (options.requestPermission) {
+      permission = await this.requestPermission()
+    }
     if (permission !== 'granted') {
       return {
         ok: false,
@@ -151,10 +174,10 @@ export class NotificationService {
       const payload = this.subscriptionToPayload(subscription)
       await subscribePush(payload)
       this.setPreferenceEnabled(true)
-      logInfo('Push subscription stored on backend')
+      logInfo('Push subscription stored on backend for auth user')
       return { ok: true }
     } catch (error) {
-      logError('Failed to enable push notifications', error)
+      logError('Failed to register push subscription', error)
       return {
         ok: false,
         reason: error instanceof Error ? error.message : 'Failed to enable notifications.',
@@ -162,9 +185,31 @@ export class NotificationService {
     }
   }
 
+  /** User taps Allow / Profile ON — may prompt for permission. */
+  static async enable(): Promise<{ ok: boolean; reason?: string }> {
+    return this.registerWithBackend({ requestPermission: true })
+  }
+
   /**
-   * Unsubscribe locally and remove from backend. Preference → OFF.
+   * After login / cold start with JWT: if browser already granted, upsert
+   * subscription under the real auth userId (replaces legacy "default").
    */
+  static async syncAfterLogin(): Promise<void> {
+    if (!getAccessToken()) return
+    if (!this.isSupported()) return
+    if (Notification.permission !== 'granted') return
+
+    try {
+      const result = await this.registerWithBackend({ requestPermission: false })
+      if (!result.ok) {
+        logWarn('Post-login push sync skipped', result.reason)
+      }
+    } catch (error) {
+      logWarn('Post-login push sync failed gracefully', error)
+    }
+  }
+
+  /** Profile OFF — DELETE on backend (auth), then drop browser subscription. */
   static async disable(): Promise<{ ok: boolean; reason?: string }> {
     if (!this.isSupported()) {
       this.setPreferenceEnabled(false)
@@ -177,11 +222,12 @@ export class NotificationService {
 
       if (subscription) {
         const endpoint = subscription.endpoint
-        try {
-          await unsubscribePush(endpoint)
-        } catch (error) {
-          // Still drop local subscription even if backend call fails.
-          logWarn('Backend unsubscribe failed — continuing locally', error)
+        if (getAccessToken()) {
+          try {
+            await unsubscribePush(endpoint)
+          } catch (error) {
+            logWarn('Backend unsubscribe failed — continuing locally', error)
+          }
         }
         await subscription.unsubscribe()
         logInfo('Push subscription removed')
@@ -200,18 +246,40 @@ export class NotificationService {
   }
 
   /**
-   * On launch: if already granted + preference ON, refresh backend registration.
-   * Never auto-prompts when permission is default/denied.
+   * Before clearing JWT on logout: best-effort DELETE for this endpoint.
+   * Keeps the browser PushSubscription so the next login can re-upsert under the new user.
    */
-  static async syncOnLaunch(): Promise<void> {
+  static async detachBeforeLogout(): Promise<void> {
     if (!this.isSupported()) return
-    if (Notification.permission !== 'granted') return
-    if (!this.getPreferenceEnabled()) return
+    if (!getAccessToken()) return
 
     try {
-      await this.enable()
+      const registration = await navigator.serviceWorker.ready
+      const subscription = await registration.pushManager.getSubscription()
+      if (!subscription) return
+
+      await unsubscribePush(subscription.endpoint)
+      logInfo('Push subscription detached before logout', subscription.endpoint)
     } catch (error) {
-      logWarn('Launch push sync failed gracefully', error)
+      logWarn('Logout push detach failed (best effort)', error)
+    }
+  }
+
+  /** Optional debug — POST /notifications/test { benefitId }. */
+  static async sendTest(benefitId: string): Promise<{ ok: boolean; reason?: string }> {
+    if (!getAccessToken()) {
+      return { ok: false, reason: 'Sign in required.' }
+    }
+    try {
+      const result = await testPush(benefitId)
+      logInfo('Test push sent', result)
+      return { ok: true }
+    } catch (error) {
+      logError('Test push failed', error)
+      return {
+        ok: false,
+        reason: error instanceof Error ? error.message : 'Test push failed.',
+      }
     }
   }
 }

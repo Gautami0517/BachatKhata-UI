@@ -256,3 +256,28 @@ function sanitizeUrl(raw: string): string | null {
     return null
   }
 }
+
+/** Display API benefitScore as mock-style one decimal (e.g. 9 → "9.0"). */
+export function formatBenefitScore(score: number | null | undefined): string | null {
+  if (score == null || !Number.isFinite(score)) return null
+  return (Math.round(score * 10) / 10).toFixed(1)
+}
+
+/**
+ * Success-screen color bands on the API 0–10 scale:
+ * ≥8 green · 3–<8 yellow · <3 red
+ */
+export function benefitScoreBand(
+  score: number,
+): 'high' | 'mid' | 'low' {
+  if (score >= 8) return 'high'
+  if (score >= 3) return 'mid'
+  return 'low'
+}
+
+export function benefitScoreTextClass(score: number): string {
+  const band = benefitScoreBand(score)
+  if (band === 'high') return 'text-emerald-600'
+  if (band === 'mid') return 'text-amber-500'
+  return 'text-red-600'
+}

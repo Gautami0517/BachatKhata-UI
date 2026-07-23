@@ -20,6 +20,7 @@ import {
   setStoredUser,
 } from '../api/authStorage'
 import type { AuthUser, LoginBody, SignupBody } from '../types/auth'
+import { NotificationService } from '../services/NotificationService'
 import { logInfo } from '../utils/logger'
 
 type AuthContextValue = {
@@ -87,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(data.accessToken)
     setUser(data.user)
     logInfo('Logged in', { userId: data.user.id })
+    // Re-bind push under this auth UUID (upsert; replaces legacy "default" userId).
+    void NotificationService.syncAfterLogin()
   }, [])
 
   const signup = useCallback(
@@ -99,6 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const logout = useCallback(async () => {
+    // Detach push while Bearer is still valid.
+    await NotificationService.detachBeforeLogout()
+
     const refreshToken = getRefreshToken()
     if (refreshToken) {
       try {

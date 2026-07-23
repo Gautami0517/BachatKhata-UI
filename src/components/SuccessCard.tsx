@@ -1,9 +1,12 @@
 /**
  * Success confirmation after import / save.
+ * benefitScore sits between the detail card and View Dashboard (color bands).
  */
 import { motion } from 'framer-motion'
 import type { Benefit } from '../types/benefit'
 import {
+  benefitScoreTextClass,
+  formatBenefitScore,
   formatCurrency,
   formatDiscount,
   getBenefitLabel,
@@ -18,6 +21,11 @@ type SuccessCardProps = {
 
 export function SuccessCard({ benefit, onViewDashboard }: SuccessCardProps) {
   const label = getBenefitLabel(benefit)
+  const scoreLabel = formatBenefitScore(benefit.benefitScore)
+  const scoreColor =
+    benefit.benefitScore != null && Number.isFinite(benefit.benefitScore)
+      ? benefitScoreTextClass(benefit.benefitScore)
+      : 'text-gray-400'
 
   return (
     <motion.div
@@ -66,10 +74,14 @@ export function SuccessCard({ benefit, onViewDashboard }: SuccessCardProps) {
         </dl>
       </div>
 
+      <p className={`mt-5 text-center text-base font-semibold tabular-nums ${scoreColor}`}>
+        {scoreLabel != null ? `Benefit score ${scoreLabel}` : 'Benefit score —'}
+      </p>
+
       <button
         type="button"
         onClick={onViewDashboard}
-        className="mt-8 w-full max-w-md rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3.5 text-sm font-semibold text-white shadow-md"
+        className="mt-6 w-full max-w-md rounded-full bg-[#3b3a8c] px-5 py-3.5 text-sm font-semibold text-white shadow-md"
       >
         View Dashboard
       </button>

@@ -14,8 +14,10 @@ export type BenefitSort =
   | 'newest'
   | 'highest_discount_pct'
   | 'highest_savings'
-  | 'brand_az'
+  | 'highest_score'
   | 'category'
+
+export type BenefitStatus = 'unused' | 'used' | 'all'
 
 export type Benefit = {
   id: string
@@ -32,6 +34,10 @@ export type Benefit = {
   expiryDate: string | null
   source: string | null
   rawText: string
+  isUsed: boolean
+  usedAt: string | null
+  /** C-Vault usefulness score from API (0–10). Null if not scored. */
+  benefitScore: number | null
   createdAt: string
   updatedAt: string
 }
@@ -50,6 +56,7 @@ export type CouponPreview = {
   expiryDate: string | null
   source: string | null
   rawText: string
+  benefitScore?: number | null
 }
 
 export type SaveExtractedPayload = {
@@ -95,6 +102,7 @@ export type AskResult = {
   couponCode: string | null
   expiryDate: string | null
   score: number
+  benefitScore?: number | null
 }
 
 export type AskMatchType = 'product' | 'category_fallback' | 'general' | null

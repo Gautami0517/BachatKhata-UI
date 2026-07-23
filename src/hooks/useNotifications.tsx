@@ -43,11 +43,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setPreferenceEnabled(NotificationService.getPreferenceEnabled())
   }, [])
 
-  // Only sync push with backend when JWT exists (subscribe is auth-required).
+  // After JWT is ready: upsert push under this user if permission already granted.
   useEffect(() => {
     refresh()
     if (isBootstrapping || !isAuthenticated) return
-    void NotificationService.syncOnLaunch().then(() => refresh())
+    void NotificationService.syncAfterLogin().then(() => refresh())
     logInfo('NotificationProvider sync (authenticated)', {
       supported,
       permission: NotificationService.getPermission(),
