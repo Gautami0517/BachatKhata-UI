@@ -6,21 +6,27 @@ import { useNavigate } from 'react-router-dom'
 import { AskBar } from '../components/AskBar'
 import { CouponCard } from '../components/CouponCard'
 import { EmptyState } from '../components/EmptyState'
-import { FilterSlidersIcon, LightningIcon, LightningOutlineIcon, SparklesIcon } from '../components/icons'
+import {
+  EMPTY_FILTERS,
+  FiltersSheet,
+  type DashboardFilters,
+} from '../components/FiltersSheet'
+import { FilterSlidersIcon, LightningOutlineIcon, SparklesIcon } from '../components/icons'
 import { ImportSheet } from '../components/ImportSheet'
 import { LoadingCardList } from '../components/LoadingCard'
 import { getErrorMessage, useToast } from '../components/ToastProvider'
 import { useAuth, userInitials } from '../auth/AuthContext'
 import { useAskBenefits } from '../hooks/useBenefitMutations'
 import { useBenefits } from '../hooks/useBenefits'
-import { FIXED_CATEGORIES, type BenefitSort } from '../types/benefit'
+import type { BenefitSort } from '../types/benefit'
 import { groupBenefitsByExpiry } from '../utils/benefitDisplay'
+import { formatFilterSummary, hasActiveFilters } from '../utils/filterSummary'
 
 const SORT_CHIPS: Array<{ id: BenefitSort; label: string; sparkle?: boolean }> = [
+  { id: 'highest_score', label: 'Relevance', sparkle: true },
   { id: 'newest', label: 'Newest' },
   { id: 'highest_discount_pct', label: 'Highest %' },
   { id: 'highest_savings', label: '₹ Highest' },
-  { id: 'highest_score', label: 'Relevance', sparkle: true },
 ]
 
 const GROUP_HEADER: Record<string, string> = {
@@ -36,17 +42,23 @@ export function Dashboard() {
   const { pushToast } = useToast()
   const { user } = useAuth()
   const [sort, setSort] = useState<BenefitSort>('expiring_soon')
-  const [category, setCategory] = useState<string | null>(null)
-  const [categoryOpen, setCategoryOpen] = useState(false)
+  const [filters, setFilters] = useState<DashboardFilters>(EMPTY_FILTERS)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
 
-  const { data, isLoading, isError, refetch, isFetching } = useBenefits({ sort, category })
+  const { data, isLoading, isError, refetch, isFetching } = useBenefits({
+    sort,
+    categories: filters.categories,
+    merchants: filters.merchants,
+    brands: filters.brands,
+  })
   const askMutation = useAskBenefits()
 
   const benefits = data ?? []
   const groups = useMemo(() => groupBenefitsByExpiry(benefits), [benefits])
   const firstName = user?.name?.trim().split(/\s+/)[0] || 'there'
   const initials = userInitials(user?.name)
+  const filtersActive = hasActiveFilters(filters)
 
   const onAsk = async (query: string) => {
     try {
@@ -55,6 +67,12 @@ export function Dashboard() {
     } catch (error) {
       pushToast(getErrorMessage(error, 'Ask C-Vault failed'))
     }
+  }
+
+  const onApplyFilters = (next: DashboardFilters) => {
+    setFilters(next)
+    // After Done from a dimension screen: reload sorted by C-Vault score high→low.
+    setSort('highest_score')
   }
 
   return (
@@ -77,26 +95,8 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* Chips scroll separately; filter stays outside overflow so dropdown works */}
       <div className="relative z-30 mb-4 flex items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <button
-            type="button"
-            onClick={() => {
-              setSort('expiring_soon')
-              setCategory(null)
-            }}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${
-              sort === 'expiring_soon' && !category
-                ? 'border-gray-900 bg-[#3b3a8c] text-white'
-                : 'border-gray-900 bg-[#e9e5f6] text-gray-900'
-            }`}
-            aria-label="Expiring soon"
-            title="Expiring soon"
-          >
-            <LightningIcon className="h-4 w-4" />
-          </button>
-
           {SORT_CHIPS.map((chip) => {
             const selected = sort === chip.id
             return (
@@ -119,65 +119,34 @@ export function Dashboard() {
           })}
         </div>
 
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setCategoryOpen((open) => !open)}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border ${
-              category
-                ? 'border-[#3b3a8c] bg-[#e9e5f6] text-[#3b3a8c]'
-                : 'border-gray-300 bg-white text-gray-700'
-            }`}
-            aria-label="Filter by category"
-            aria-expanded={categoryOpen}
-          >
-            <FilterSlidersIcon className="h-[18px] w-[18px]" />
-          </button>
-
-          {categoryOpen && (
-            <>
-              <button
-                type="button"
-                className="fixed inset-0 z-40 cursor-default"
-                aria-label="Close categories"
-                onClick={() => setCategoryOpen(false)}
-              />
-              <div className="absolute right-0 z-50 mt-2 max-h-72 w-52 overflow-y-auto rounded-2xl border border-gray-200 bg-white py-1 shadow-xl">
-                <button
-                  type="button"
-                  className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-[#f3eefc]"
-                  onClick={() => {
-                    setCategory(null)
-                    setCategoryOpen(false)
-                  }}
-                >
-                  All categories
-                </button>
-                {FIXED_CATEGORIES.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    className={`block w-full px-4 py-2.5 text-left text-sm hover:bg-[#f3eefc] ${
-                      category === item ? 'font-semibold text-[#3b3a8c]' : 'text-gray-700'
-                    }`}
-                    onClick={() => {
-                      setCategory(item)
-                      setCategoryOpen(false)
-                    }}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${
+            filtersActive
+              ? 'border-[#3b3a8c] bg-[#e9e5f6] text-[#3b3a8c]'
+              : 'border-gray-300 bg-white text-gray-700'
+          }`}
+          aria-label="Open filters"
+        >
+          <FilterSlidersIcon className="h-[18px] w-[18px]" />
+        </button>
       </div>
 
-      {category && (
+      {filtersActive && (
         <p className="mb-3 text-xs font-medium text-[#3b3a8c]">
-          Category: {category}{' '}
-          <button type="button" className="underline" onClick={() => setCategory(null)}>
+          {[
+            filters.categories.length
+              ? `Category: ${formatFilterSummary(filters.categories)}`
+              : null,
+            filters.merchants.length
+              ? `Merchant: ${formatFilterSummary(filters.merchants)}`
+              : null,
+            filters.brands.length ? `Brand: ${formatFilterSummary(filters.brands)}` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}{' '}
+          <button type="button" className="underline" onClick={() => setFilters(EMPTY_FILTERS)}>
             clear
           </button>
         </p>
@@ -242,6 +211,13 @@ export function Dashboard() {
           setImportOpen(false)
           navigate('/import/text')
         }}
+      />
+
+      <FiltersSheet
+        open={filtersOpen}
+        filters={filters}
+        onClose={() => setFiltersOpen(false)}
+        onApply={onApplyFilters}
       />
     </main>
   )

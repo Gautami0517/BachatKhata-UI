@@ -116,7 +116,7 @@ export type AskResponse = {
   message?: string
 }
 
-/** Fixed category dropdown — no /categories endpoint yet */
+/** Legacy fixed list — prefer GET /benefits/categories for filter options. */
 export const FIXED_CATEGORIES = [
   'Fashion',
   'Electronics',

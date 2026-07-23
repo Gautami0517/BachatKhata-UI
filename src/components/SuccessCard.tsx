@@ -7,7 +7,6 @@ import type { Benefit } from '../types/benefit'
 import {
   benefitScoreTextClass,
   formatBenefitScore,
-  formatCurrency,
   formatDiscount,
   getBenefitLabel,
   getBenefitSubtitle,
@@ -26,6 +25,13 @@ export function SuccessCard({ benefit, onViewDashboard }: SuccessCardProps) {
     benefit.benefitScore != null && Number.isFinite(benefit.benefitScore)
       ? benefitScoreTextClass(benefit.benefitScore)
       : 'text-gray-400'
+  const expiryLabel = benefit.expiryDate
+    ? new Date(benefit.expiryDate).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—'
 
   return (
     <motion.div
@@ -62,15 +68,7 @@ export function SuccessCard({ benefit, onViewDashboard }: SuccessCardProps) {
         <dl className="mt-5 divide-y divide-gray-100 text-sm">
           <Row label="Discount" value={formatDiscount(benefit)} accent />
           <Row label="Voucher Code" value={benefit.couponCode?.trim() || '—'} mono />
-          <Row
-            label="Max Savings"
-            value={
-              benefit.maximumDiscount != null
-                ? `Up to ${formatCurrency(benefit.maximumDiscount)}`
-                : '—'
-            }
-            accent
-          />
+          <Row label="Expiry" value={expiryLabel} accent />
         </dl>
       </div>
 

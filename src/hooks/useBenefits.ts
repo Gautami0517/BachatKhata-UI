@@ -3,12 +3,15 @@ import { BENEFITS_QUERY_KEY, fetchBenefits, type ListBenefitsParams } from '../a
 
 export function useBenefits(params: ListBenefitsParams = {}) {
   const sort = params.sort ?? 'expiring_soon'
-  const category = params.category ?? null
   const status = params.status ?? 'unused'
+  const categories = params.categories ?? []
+  const merchants = params.merchants ?? []
+  const brands = params.brands ?? []
 
   return useQuery({
-    queryKey: [...BENEFITS_QUERY_KEY, sort, category, status],
-    queryFn: () => fetchBenefits({ sort, category, status }),
+    queryKey: [...BENEFITS_QUERY_KEY, sort, status, categories, merchants, brands],
+    queryFn: () =>
+      fetchBenefits({ sort, status, categories, merchants, brands }),
     staleTime: 30_000,
   })
 }

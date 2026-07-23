@@ -13,21 +13,60 @@ export const BENEFITS_QUERY_KEY = ['benefits'] as const
 
 export type ListBenefitsParams = {
   sort?: BenefitSort
-  category?: string | null
   status?: BenefitStatus
+  categories?: string[]
+  merchants?: string[]
+  brands?: string[]
+}
+
+function appendListParams(
+  search: URLSearchParams,
+  key: string,
+  values: string[] | undefined,
+) {
+  if (!values?.length) return
+  for (const value of values) {
+    const trimmed = value.trim()
+    if (trimmed) search.append(key, trimmed)
+  }
 }
 
 export async function fetchBenefits(
   params: ListBenefitsParams = {},
 ): Promise<Benefit[]> {
-  const { data } = await api.get<Benefit[]>('/benefits', {
-    params: {
-      sort: params.sort ?? 'expiring_soon',
-      status: params.status ?? 'unused',
-      ...(params.category ? { category: params.category } : {}),
-    },
-  })
+  const search = new URLSearchParams()
+  search.set('sort', params.sort ?? 'expiring_soon')
+  search.set('status', params.status ?? 'unused')
+  appendListParams(search, 'category', params.categories)
+  appendListParams(search, 'merchant', params.merchants)
+  appendListParams(search, 'brand', params.brands)
+
+  const { data } = await api.get<Benefit[]>(`/benefits?${search.toString()}`)
   return data
+}
+
+/** GET /benefits/categories → { categories: string[] } */
+export async function fetchBenefitCategories(q?: string): Promise<string[]> {
+  const { data } = await api.get<{ categories: string[] }>('/benefits/categories', {
+    params: q?.trim() ? { q: q.trim() } : undefined,
+  })
+  return data.categories ?? []
+}
+
+/** GET /benefits/merchants → { merchants: string[] } */
+export async function fetchBenefitMerchants(q?: string): Promise<string[]> {
+  const { data } = await api.get<{ merchants: string[] }>('/benefits/merchants', {
+    params: q?.trim() ? { q: q.trim() } : undefined,
+  })
+  return data.merchants ?? []
+}
+
+/** GET /benefits/brands → { brands: string[] } */
+export async function fetchBenefitBrands(q?: string): Promise<string[]> {
+  const { data } = await api.get<{ brands: string[] }>('/benefits/brands', {
+    params: q?.trim() ? { q: q.trim() } : undefined,
+  })
+  return data.brands ?? []
 }
 
 export async function fetchBenefitById(id: string): Promise<Benefit> {
