@@ -113,6 +113,15 @@ export function SparklesIcon({ className = 'h-3.5 w-3.5' }: IconProps) {
   )
 }
 
+/** Filled star — Ask “Best match” badge */
+export function StarIcon({ className = 'h-3.5 w-3.5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} fill="currentColor">
+      <path d="M12 3.4 14.6 9l6 .5-4.5 3.9 1.4 5.8L12 16.4 6.5 19.2l1.4-5.8L3.4 9.5l6-.5L12 3.4z" />
+    </svg>
+  )
+}
+
 export function TrashIcon({ className = 'h-5 w-5', strokeWidth = 1.8 }: IconProps) {
   return (
     <svg

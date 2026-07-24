@@ -1,5 +1,6 @@
 /**
- * Dashboard coupon card — always-visible ✕ opens Take Action sheet.
+ * Dashboard / Ask coupon card.
+ * Optional highlightLabel for Ask top relevance hit (API order, not benefitScore).
  */
 import { useEffect, useId, useState, type MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
@@ -16,7 +17,7 @@ import {
   getBrandInitials,
 } from '../utils/benefitDisplay'
 import { BenefitScorePill } from './BenefitScorePill'
-import { CheckCircleIcon, CloseIcon, TrashIcon } from './icons'
+import { CheckCircleIcon, CloseIcon, StarIcon, TrashIcon } from './icons'
 import { getErrorMessage, useToast } from './ToastProvider'
 
 type CardBenefit = Benefit | AskResult
@@ -36,6 +37,8 @@ type CouponCardProps = {
   urgency?: string
   /** Dashboard only — ✕ opens Take Action sheet */
   showActions?: boolean
+  /** Ask results — badge on top relevance hit (API order, not benefitScore) */
+  highlightLabel?: string | null
 }
 
 function isFullBenefit(benefit: CardBenefit): benefit is Benefit {
@@ -47,6 +50,7 @@ export function CouponCard({
   index = 0,
   urgency = 'later',
   showActions = false,
+  highlightLabel = null,
 }: CouponCardProps) {
   const label = getBenefitLabel(benefit)
   const subtitle = getBenefitSubtitle(benefit)
@@ -67,8 +71,9 @@ export function CouponCard({
   const benefitScore =
     'benefitScore' in benefit ? (benefit.benefitScore ?? null) : null
 
-  const border =
-    urgency === 'today'
+  const border = highlightLabel
+    ? 'border-[#3b3a8c] ring-1 ring-[#3b3a8c]/25'
+    : urgency === 'today'
       ? 'border-[#e4b4b0]'
       : urgency === 'tomorrow'
         ? 'border-[#e2d2b0]'
@@ -122,9 +127,17 @@ export function CouponCard({
   return (
     <>
       <div className={`relative rounded-[18px] border bg-white ${border}`}>
+        {highlightLabel && (
+          <div className="absolute -top-2.5 left-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#3b3a8c] px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+            <StarIcon className="h-3 w-3 text-amber-300" />
+            {highlightLabel}
+          </div>
+        )}
         <Link
           to={`/benefits/${benefit.id}`}
-          className="flex items-center gap-3 p-3.5 pr-11 transition active:scale-[0.99]"
+          className={`flex items-center gap-3 p-3.5 pr-11 transition active:scale-[0.99] ${
+            highlightLabel ? 'pt-5' : ''
+          }`}
         >
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-sm font-bold ${tone}`}
